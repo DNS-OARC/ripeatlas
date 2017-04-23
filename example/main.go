@@ -4,8 +4,8 @@ import (
     "flag"
     "github.com/DNS-OARC/ripeatlas"
     "log"
-    "strconv"
-    "time"
+    //"strconv"
+    //"time"
 )
 
 var start int
@@ -23,48 +23,59 @@ func init() {
 func main() {
     flag.Parse()
 
-    var startTime, stopTime time.Time
+    // var startTime, stopTime time.Time
+    //
+    // if last > 0 {
+    //     stopTime = time.Now()
+    //     startTime = stopTime.Add(time.Duration(-last) * time.Second)
+    // } else {
+    //     startTime = time.Unix(int64(start), 0)
+    //     stopTime = time.Unix(int64(stop), 0)
+    // }
 
-    if last > 0 {
-        stopTime = time.Now()
-        startTime = stopTime.Add(time.Duration(-last) * time.Second)
-    } else {
-        startTime = time.Unix(int64(start), 0)
-        stopTime = time.Unix(int64(stop), 0)
+    var msm ripeatlas.Reader
+    if file {
+        msm = ripeatlas.NewFile()
     }
 
     for _, arg := range flag.Args() {
-        var msm ripeatlas.Reader
-        if file {
-            f := ripeatlas.NewFile()
-            f.Name = arg
+        //var msm ripeatlas.Reader
+        // if file {
+        //     f := ripeatlas.NewFile()
+        //     f.Name = arg
+        //
+        //     if err := f.Read(); err != nil {
+        //         log.Fatalf(err.Error())
+        //     }
+        //     msm = f
+        // } else {
+        //     id, err := strconv.Atoi(arg)
+        //     if err != nil {
+        //         log.Fatalf("Invalid measurement id: %s", arg)
+        //     }
+        //
+        //     h := ripeatlas.NewHttp()
+        //     h.Start = startTime.Unix()
+        //     h.Stop = stopTime.Unix()
+        //     h.MsmId = id
+        //
+        //     if err := h.Get(); err != nil {
+        //         log.Fatalf(err.Error())
+        //     }
+        //     msm = h
+        // }
 
-            if err := f.Read(); err != nil {
-                log.Fatalf(err.Error())
-            }
-            msm = f
-        } else {
-            id, err := strconv.Atoi(arg)
-            if err != nil {
-                log.Fatalf("Invalid measurement id: %s", arg)
-            }
-
-            h := ripeatlas.NewHttp()
-            h.Start = startTime.Unix()
-            h.Stop = stopTime.Unix()
-            h.MsmId = id
-
-            if err := h.Get(); err != nil {
-                log.Fatalf(err.Error())
-            }
-            msm = h
+        results, err := msm.MeasurementResults(ripeatlas.Params{"file": arg})
+        if err != nil {
+            log.Fatalf(err.Error())
         }
 
-        for _, m := range msm.Measurements() {
-            log.Printf("%d", len(m.Resultset()))
-            for _, r := range m.Resultset() {
-                r := r.Contained().Result.Contained()
-                m, _ := r.UnpackAbuf()
+        for _, r := range results {
+            log.Printf("%d %s", r.MsmId(), r.Type())
+            m, _ := r.DnsResult.UnpackAbuf()
+            log.Printf("%v", m)
+            for _, s := range r.DnsResultsets {
+                m, _ := s.Result().UnpackAbuf()
                 log.Printf("%v", m)
             }
         }

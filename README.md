@@ -6,6 +6,10 @@
 
 todo
 
+## Implementation Status
+
+TODO: table with what API calls and firmwares are implemented
+
 ## Usage
 
 todo

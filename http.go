@@ -24,44 +24,87 @@ import (
     "fmt"
     "io/ioutil"
     "net/http"
+    "net/url"
+    "strings"
+
+    "github.com/DNS-OARC/ripeatlas/measurement"
 )
 
 type Http struct {
-    Start        int64
-    Stop         int64
-    MsmId        int
-    measurements []MeasurementContainer
 }
 
 const (
-    UrlApiV2 = "https://atlas.ripe.net/api/v2/measurements"
+    MeasurementsUrl = "https://atlas.ripe.net/api/v2/measurements"
 )
 
 func NewHttp() *Http {
     return &Http{}
 }
 
-func (h *Http) Measurements() []MeasurementContainer {
-    return h.measurements
+func (h *Http) get(url string) ([]byte, error) {
+    r, err := http.Get(url)
+    if err != nil {
+        return nil, fmt.Errorf("http.Get(%s): %s", url, err.Error())
+    }
+
+    c, err := ioutil.ReadAll(r.Body)
+    r.Body.Close()
+    if err != nil {
+        return nil, fmt.Errorf("ioutil.ReadAll(%s): %s", url, err.Error())
+    }
+
+    return c, nil
 }
 
-func (h *Http) Get() error {
-    url := fmt.Sprintf("%s/%d/results?start=%d&stop=%d&format=json", UrlApiV2, h.MsmId, h.Start, h.Stop)
+func (h *Http) MeasurementResults(p Params) ([]measurement.Result, error) {
+    var qstr []string
+    var pk string
 
-    resp, err := http.Get(url)
+    for k, v := range p {
+        switch k {
+        case "pk":
+            v, ok := v.(string)
+            if !ok {
+                return nil, fmt.Errorf("Invalid %s parameter, must be string", k)
+            }
+            pk = v
+        case "start":
+            fallthrough
+        case "stop":
+            v, ok := v.(int64)
+            if !ok {
+                return nil, fmt.Errorf("Invalid %s parameter, must be int64", k)
+            }
+            qstr = append(qstr, fmt.Sprintf("%s=%d", k, v))
+        case "probe_ids":
+            fallthrough
+        case "anchors-only":
+            fallthrough
+        case "public-only":
+            return nil, fmt.Errorf("Unimplemented parameter %s", k)
+        default:
+            return nil, fmt.Errorf("Invalid parameter %s", k)
+        }
+    }
+
+    if pk == "" {
+        return nil, fmt.Errorf("Required parameter pk missing")
+    }
+
+    url := fmt.Sprintf("%s/%s/results?format=json", MeasurementsUrl, url.PathEscape(pk))
+    if len(qstr) > 0 {
+        url += strings.Join(qstr, "&")
+    }
+
+    c, err := h.get(url)
     if err != nil {
-        return fmt.Errorf("http.Get(%s): %s", url, err.Error())
+        return nil, err
     }
 
-    body, err := ioutil.ReadAll(resp.Body)
-    resp.Body.Close()
-    if err != nil {
-        return fmt.Errorf("ioutil.ReadAll(%s): %s", url, err.Error())
+    var results []measurement.Result
+    if err := json.Unmarshal(c, &results); err != nil {
+        return nil, fmt.Errorf("json.Unmarshal(%s): %s", url, err.Error())
     }
 
-    if err := json.Unmarshal(body, &h.measurements); err != nil {
-        return fmt.Errorf("json.Unmarshal(%s): %s", url, err.Error())
-    }
-
-    return nil
+    return results, nil
 }

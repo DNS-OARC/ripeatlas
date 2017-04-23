@@ -24,40 +24,61 @@ import (
     "fmt"
     "io/ioutil"
     "os"
+
+    "github.com/DNS-OARC/ripeatlas/measurement"
 )
 
 type File struct {
-    Name         string
-    measurements []MeasurementContainer
 }
 
 func NewFile() *File {
     return &File{}
 }
 
-func (f *File) Measurements() []MeasurementContainer {
-    return f.measurements
+func (f *File) read(file string) ([]byte, error) {
+    r, err := os.Open(file)
+    defer r.Close()
+    if err != nil {
+        return nil, fmt.Errorf("os.Open(%s): %s", file, err.Error())
+    }
+
+    c, err := ioutil.ReadAll(r)
+    if err != nil {
+        return nil, fmt.Errorf("ioutil.ReadAll(%s): %s", file, err.Error())
+    }
+
+    return c, nil
 }
 
-func (f *File) Read() error {
-    if f.Name == "" {
-        return fmt.Errorf("Name must be set")
+func (f *File) MeasurementResults(p Params) ([]measurement.Result, error) {
+    var file string
+
+    for k, v := range p {
+        switch k {
+        case "file":
+            v, ok := v.(string)
+            if !ok {
+                return nil, fmt.Errorf("Invalid %s parameter, must be string", k)
+            }
+            file = v
+        default:
+            return nil, fmt.Errorf("Invalid parameter %s", k)
+        }
     }
 
-    file, err := os.Open(f.Name)
-    defer file.Close()
+    if file == "" {
+        return nil, fmt.Errorf("Required parameter file missing")
+    }
+
+    c, err := f.read(file)
     if err != nil {
-        return fmt.Errorf("os.Open(%s): %s", f.Name, err.Error())
+        return nil, err
     }
 
-    content, err := ioutil.ReadAll(file)
-    if err != nil {
-        return fmt.Errorf("ioutil.ReadAll(%s): %s", f.Name, err.Error())
+    var results []measurement.Result
+    if err := json.Unmarshal(c, &results); err != nil {
+        return nil, fmt.Errorf("json.Unmarshal(%s): %s", file, err.Error())
     }
 
-    if err := json.Unmarshal(content, &f.measurements); err != nil {
-        return fmt.Errorf("json.Unmarshal(%s): %s", f.Name, err.Error())
-    }
-
-    return nil
+    return results, nil
 }
