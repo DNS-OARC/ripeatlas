@@ -19,6 +19,12 @@
 
 package ripeatlas
 
+import (
+    "github.com/DNS-OARC/ripeatlas/measurement"
+)
+
+type Params map[string]interface{}
+
 type Reader interface {
-    Measurements() []MeasurementContainer
+    MeasurementResults(p Params) ([]measurement.Result, error)
 }

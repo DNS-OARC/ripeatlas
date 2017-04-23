@@ -17,38 +17,28 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with ripeatlas.  If not, see <http://www.gnu.org/licenses/>.
 
-package ripeatlas
+package dns
 
 import "encoding/json"
 
 type Error struct {
-    Timeout     int    `json:"timeout"`     // query timeout (int)
-    Getaddrinfo string `json:"getaddrinfo"` // error message (string)
+    Data struct {
+        Timeout     int    `json:"timeout"`     // query timeout (int)
+        Getaddrinfo string `json:"getaddrinfo"` // error message (string)
+    }
 }
 
-type ErrorContainer struct {
-    Error *Error
-}
-
-func (e *ErrorContainer) UnmarshalJSON(b []byte) error {
-    e.Error = &Error{}
-    if err := json.Unmarshal(b, &e.Error); err != nil {
+func (e *Error) UnmarshalJSON(b []byte) error {
+    if err := json.Unmarshal(b, &e.Data); err != nil {
         return err
     }
     return nil
 }
 
-func (e *ErrorContainer) Contained() *Error {
-    if e.Error == nil {
-        e.Error = &Error{}
-    }
-    return e.Error
+func (e *Error) Timeout() int {
+    return e.Data.Timeout
 }
 
-func (e *ErrorContainer) Timeout() int {
-    return e.Contained().Timeout
-}
-
-func (e *ErrorContainer) Getaddrinfo() string {
-    return e.Contained().Getaddrinfo
+func (e *Error) Getaddrinfo() string {
+    return e.Data.Getaddrinfo
 }
