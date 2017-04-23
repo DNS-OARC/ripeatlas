@@ -19,66 +19,99 @@
 
 package dns
 
-import "encoding/json"
+import (
+    "encoding/json"
+    "fmt"
+)
 
 type Resultset struct {
     Data struct {
-        Af        int    `json:"af"`        // [optional] IP version: "4" or "6" (int)
-        DstAddr   string `json:"dst_addr"`  // [optional] IP address of the destination (string)
-        DstName   string `json:"dst_name"`  // [optional] hostname of the destination (string)
-        Error     Error  `json:"error"`     // [optional] error message (associative array)
-        Lts       int    `json:"lts"`       // last time synchronised. How long ago (in seconds) the clock of the probe was found to be in sync with that of a controller. The value -1 is used to indicate that the probe does not know whether it is in sync (from 4650) (int)
-        Proto     string `json:"proto"`     // "TCP" or "UDP" (string)
-        Qbuf      string `json:"qbuf"`      // [optional] query payload buffer which was sent to the server, UU encoded (string)
-        Result    Result `json:"result"`    // [optional] response from the DNS server (associative array)
-        Retry     int    `json:"retry"`     // [optional] retry count (int)
-        Timestamp int    `json:"timestamp"` // start time, in Unix timestamp (int)
+        Af        int             `json:"af"`
+        DstAddr   string          `json:"dst_addr"`
+        DstName   string          `json:"dst_name"`
+        Error     json.RawMessage `json:"error"`
+        Lts       int             `json:"lts"`
+        Proto     string          `json:"proto"`
+        Qbuf      string          `json:"qbuf"`
+        Result    json.RawMessage `json:"result"`
+        Retry     int             `json:"retry"`
+        Timestamp int             `json:"timestamp"`
     }
+
+    error  *Error
+    result *Result
 }
 
 func (r *Resultset) UnmarshalJSON(b []byte) error {
     if err := json.Unmarshal(b, &r.Data); err != nil {
+        fmt.Printf("%s\n", string(b))
         return err
     }
+
+    if r.Data.Error != nil {
+        r.error = &Error{}
+        if err := json.Unmarshal(r.Data.Error, r.error); err != nil {
+            return fmt.Errorf("Unable to process DNS error: %s", err.Error())
+        }
+    }
+    if r.Data.Result != nil {
+        r.result = &Result{}
+        if err := json.Unmarshal(r.Data.Result, r.result); err != nil {
+            return fmt.Errorf("Unable to process DNS result: %s", err.Error())
+        }
+    }
+
     return nil
 }
 
+// IP version: "4" or "6" (optional).
 func (r *Resultset) Af() int {
     return r.Data.Af
 }
 
+// IP address of the destination (optional).
 func (r *Resultset) DstAddr() string {
     return r.Data.DstAddr
 }
 
+// Hostname of the destination (optional).
 func (r *Resultset) DstName() string {
     return r.Data.DstName
 }
 
+// DNS error message, nil if not present.
 func (r *Resultset) Error() *Error {
-    return &r.Data.Error
+    return r.error
 }
 
+// Last time synchronised. How long ago (in seconds) the clock of the probe
+// was found to be in sync with that of a controller. The value -1 is used
+// to indicate that the probe does not know whether it is in sync.
 func (r *Resultset) Lts() int {
     return r.Data.Lts
 }
 
+// Protocol, "TCP" or "UDP".
 func (r *Resultset) Proto() string {
     return r.Data.Proto
 }
 
+// Query payload buffer which was sent to the server, UU encoded (optional).
 func (r *Resultset) Qbuf() string {
     return r.Data.Qbuf
 }
 
+// DNS response from the DNS server, nil if not present.
 func (r *Resultset) Result() *Result {
-    return &r.Data.Result
+    return r.result
 }
 
+// Retry count (optional).
 func (r *Resultset) Retry() int {
     return r.Data.Retry
 }
 
+// Start time, in Unix timestamp.
 func (r *Resultset) Timestamp() int {
     return r.Data.Timestamp
 }
