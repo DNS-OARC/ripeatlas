@@ -1,5 +1,7 @@
 # Go bindings for RIPE Atlas API
 
+[![Build Status](https://travis-ci.org/DNS-OARC/ripeatlas.svg?branch=master)](https://travis-ci.org/DNS-OARC/ripeatlas)
+
 ## About
 
 todo
