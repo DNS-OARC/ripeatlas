@@ -89,8 +89,13 @@ func main() {
                     log.Printf("%v", p.Rtt())
                 }
             case "traceroute":
-                for _, p := range r.TracerouteResults() {
-                    log.Printf("%v", p.Hop())
+                for _, t := range r.TracerouteResults() {
+                    log.Printf("%v", t.Hop())
+                }
+            case "http":
+                log.Printf("%s", r.Uri())
+                for _, h := range r.HttpResults() {
+                    log.Printf("header %d body %d", h.Hsize(), h.Bsize())
                 }
             }
         }
