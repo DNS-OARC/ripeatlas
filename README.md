@@ -4,15 +4,60 @@
 
 ## About
 
-todo
+Go bindings for the RIPE Atlas API to retrieve measurements and other data,
+can read from JSON files or use the REST API. Will decode the data into Go
+objects and have helper functions to easily access the data within.
 
-## Implementation Status
+## REST API implementation status
 
-TODO: table with what API calls and firmwares are implemented
+Implementation status of API calls described by https://atlas.ripe.net/docs/api/v2/reference/ .
+
+### anchor-measurements
+
+### anchors
+
+### credits
+
+### keys
+
+### measurements
+
+Call | Status | Func
+---- | ------ | -----
+/api/v2/measurements/{pk}/results/ | Done | Reader.MeasurementResults()
+
+### participation-requests
+
+### probes
+
+## Objects implementation status
+
+Implementation status of objects (by type) decribed by https://atlas.ripe.net/docs/data_struct/ .
+
+Type | Fireware | Status
+---- | -------- | ------
+dns | 4610 to 4760 | Done
 
 ## Usage
 
-todo
+```go
+import (
+    "fmt"
+    "github.com/DNS-OARC/ripeatlas"
+)
+
+r := ripeatlas.Reader(ripeatlas.NewFile())
+rs, _ := r.MeasurementResults(ripeatlas.Params{"file": name})
+for _, i := range rs {
+    fmt.Printf("%d %s\n", i.MsmId(), i.Type())
+}
+
+r := ripeatlas.Reader(ripeatlas.NewHttp())
+rs, _ := r.MeasurementResults(ripeatlas.Params{"pk": id})
+for _, i := range rs {
+    fmt.Printf("%d %s\n", i.MsmId(), i.Type())
+}
+```
 
 ## Author(s)
 

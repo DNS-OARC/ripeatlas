@@ -26,5 +26,5 @@ import (
 type Params map[string]interface{}
 
 type Reader interface {
-    MeasurementResults(p Params) ([]measurement.Result, error)
+    MeasurementResults(p Params) ([]*measurement.Result, error)
 }

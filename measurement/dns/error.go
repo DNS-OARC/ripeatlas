@@ -19,26 +19,33 @@
 
 package dns
 
-import "encoding/json"
+import (
+    "encoding/json"
+    "fmt"
+)
 
+// Error message.
 type Error struct {
     Data struct {
-        Timeout     int    `json:"timeout"`     // query timeout (int)
-        Getaddrinfo string `json:"getaddrinfo"` // error message (string)
+        Timeout     int    `json:"timeout"`
+        Getaddrinfo string `json:"getaddrinfo"`
     }
 }
 
 func (e *Error) UnmarshalJSON(b []byte) error {
     if err := json.Unmarshal(b, &e.Data); err != nil {
+        fmt.Printf("%s\n", string(b))
         return err
     }
     return nil
 }
 
+// Query timeout.
 func (e *Error) Timeout() int {
     return e.Data.Timeout
 }
 
+// Error message.
 func (e *Error) Getaddrinfo() string {
     return e.Data.Getaddrinfo
 }

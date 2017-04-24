@@ -19,51 +19,83 @@
 
 package dns
 
-import "encoding/json"
+import (
+    "encoding/json"
+    "fmt"
+)
 
+// First two records from the response decoded by the probe, if they are
+// TXT or SOA; other RR can be decoded from "abuf"
 type Answer struct {
     Data struct {
-        Mname  string   `json:"MNAME"`  // domain name, RFC 1035, 3.1.13 (string)
-        Name   string   `json:"NAME"`   // domain name. (string)
-        Rdata  []string `json:"RDATA"`  // [type TXT] txt value (from 4710, list of strings, before it was a single string)
-        Rname  string   `json:"RNAME"`  // [if type SOA] mailbox, RFC 1035 3.3.13 (string)
-        Serial int      `json:"SERIAL"` // [type SOA] zone serial number, RFC 1035 3.3.13 (string)
-        Ttl    int      `json:"TTL"`    // [type SOA] time to live, RFC 1035 4.1.3 (int)
-        Type   string   `json:"TYPE"`   // RR "SOA" or "TXT" (string), RFC 1035
+        Mname  string      `json:"MNAME"`
+        Name   string      `json:"NAME"`
+        Rdata  interface{} `json:"RDATA"`
+        Rname  string      `json:"RNAME"`
+        Serial int         `json:"SERIAL"`
+        Ttl    int         `json:"TTL"`
+        Type   string      `json:"TYPE"`
     }
+
+    rdata []string
 }
 
 func (a *Answer) UnmarshalJSON(b []byte) error {
     if err := json.Unmarshal(b, &a.Data); err != nil {
+        fmt.Printf("%s\n", string(b))
         return err
     }
+
+    switch a.Data.Rdata.(type) {
+    case string:
+        a.rdata = []string{a.Data.Rdata.(string)}
+    case []interface{}:
+        for _, i := range a.Data.Rdata.([]interface{}) {
+            switch i.(type) {
+            case string:
+                a.rdata = append(a.rdata, i.(string))
+            default:
+                return fmt.Errorf("Element within RDATA field unsupported type %T", i)
+            }
+        }
+    default:
+        return fmt.Errorf("RDATA field unsupported type %T", a.Data.Rdata)
+    }
+
     return nil
 }
 
+// If the type is "SOA" this will have the original or primary domain name.
 func (a *Answer) Mname() string {
     return a.Data.Mname
 }
 
+// Domain name.
 func (a *Answer) Name() string {
     return a.Data.Name
 }
 
+// If the type is "TXT" this will have the value of that record.
 func (a *Answer) Rdata() []string {
-    return a.Data.Rdata
+    return a.rdata
 }
 
+// If the type is "SOA" this will have the mailbox.
 func (a *Answer) Rname() string {
     return a.Data.Rname
 }
 
+// If the type is "SOA" this will have the zone serial number.
 func (a *Answer) Serial() int {
     return a.Data.Serial
 }
 
+// If the type is "SOA" this will have the time to live.
 func (a *Answer) Ttl() int {
     return a.Data.Ttl
 }
 
+// Resource record type ("SOA" or "TXT").
 func (a *Answer) Type() string {
     return a.Data.Type
 }

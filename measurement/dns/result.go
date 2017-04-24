@@ -22,84 +22,111 @@ package dns
 import (
     "encoding/base64"
     "encoding/json"
+    "fmt"
 
-    "github.com/miekg/dns"
+    mdns "github.com/miekg/dns"
 )
 
+// Response from the DNS server.
 type Result struct {
     Data struct {
-        Ancount int      `json:"ANCOUNT"`  // answer count, RFC 1035 4.1.1 (int)
-        Arcount int      `json:"ARCOUNT"`  // additional record count, RFC 1035, 4.1.1 (int)
-        Id      int      `json:"ID"`       // query ID, RFC 1035 4.1.1 (int)
-        Nscount int      `json:"NSCOUNT"`  // name server count (int)
-        Qdcount int      `json:"QDCOUNT"`  // number of queries (int)
-        Abuf    string   `json:"abuf"`     // answer payload buffer from the server, UU encoded (string)
-        Answers []Answer `json:"answers"`  // first two records from the response decoded by the probe, if they are TXT or SOA; other RR can be decoded from "abuf" (array)
-        Rt      float64  `json:"rt"`       // [optional] response time in milli seconds (float)
-        Size    int      `json:"size"`     // [optional] response size (int)
-        SrcAddr string   `json:"src_addr"` // [optional] the source IP address added by the probe (string).
-        Subid   int      `json:"subid"`    // [optional] sequence number of this result within a group of results, available if the resolution is done by the probe's local resolver
-        Submax  int      `json:"submax"`   // [optional] total number of results within a group (int)
+        Ancount int             `json:"ANCOUNT"`
+        Arcount int             `json:"ARCOUNT"`
+        Id      int             `json:"ID"`
+        Nscount int             `json:"NSCOUNT"`
+        Qdcount int             `json:"QDCOUNT"`
+        Abuf    string          `json:"abuf"`
+        Answers json.RawMessage `json:"answers"`
+        Rt      float64         `json:"rt"`
+        Size    int             `json:"size"`
+        SrcAddr string          `json:"src_addr"`
+        Subid   int             `json:"subid"`
+        Submax  int             `json:"submax"`
     }
+
+    answers []*Answer
 }
 
 func (r *Result) UnmarshalJSON(b []byte) error {
     if err := json.Unmarshal(b, &r.Data); err != nil {
+        fmt.Printf("%s\n", string(b))
         return err
     }
+
+    if r.Data.Answers != nil {
+        if err := json.Unmarshal(r.Data.Answers, &r.answers); err != nil {
+            return fmt.Errorf("Unable to process DNS answers: %s", err.Error())
+        }
+    }
+
     return nil
 }
 
+// Answer count.
 func (r *Result) Ancount() int {
     return r.Data.Ancount
 }
 
+// Additional record count.
 func (r *Result) Arcount() int {
     return r.Data.Arcount
 }
 
+// Query ID.
 func (r *Result) Id() int {
     return r.Data.Id
 }
 
+// Name server count.
 func (r *Result) Nscount() int {
     return r.Data.Nscount
 }
 
+// Number of queries.
 func (r *Result) Qdcount() int {
     return r.Data.Qdcount
 }
 
+// Answer payload buffer from the server, UU encoded.
 func (r *Result) Abuf() string {
     return r.Data.Abuf
 }
 
-func (r *Result) Answers() []Answer {
-    return r.Data.Answers
+// First two records from the response decoded by the probe, if they are
+// TXT or SOA; other RR can be decoded from Abuf() using UnpackAbuf().
+func (r *Result) Answers() []*Answer {
+    return r.answers
 }
 
+// Response time in milli seconds (optional).
 func (r *Result) Rt() float64 {
     return r.Data.Rt
 }
 
+// Response size (optional).
 func (r *Result) Size() int {
     return r.Data.Size
 }
 
+// The source IP address added by the probe (optional).
 func (r *Result) SrcAddr() string {
     return r.Data.SrcAddr
 }
 
+// Sequence number of this result within a group of results, available
+// if the resolution is done by the probe's local resolver (optional).
 func (r *Result) Subid() int {
     return r.Data.Subid
 }
 
+// Total number of results within a group (optional).
 func (r *Result) Submax() int {
     return r.Data.Submax
 }
 
-func (r *Result) UnpackAbuf() (*dns.Msg, error) {
-    m := &dns.Msg{}
+// Decode the Abuf(), returns a *Msg from the github.com/miekg/dns package.
+func (r *Result) UnpackAbuf() (*mdns.Msg, error) {
+    m := &mdns.Msg{}
     if r.Data.Abuf != "" {
         b, err := base64.StdEncoding.DecodeString(r.Data.Abuf)
         if err != nil {

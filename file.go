@@ -50,7 +50,7 @@ func (f *File) read(file string) ([]byte, error) {
     return c, nil
 }
 
-func (f *File) MeasurementResults(p Params) ([]measurement.Result, error) {
+func (f *File) MeasurementResults(p Params) ([]*measurement.Result, error) {
     var file string
 
     for k, v := range p {
@@ -75,7 +75,7 @@ func (f *File) MeasurementResults(p Params) ([]measurement.Result, error) {
         return nil, err
     }
 
-    var results []measurement.Result
+    var results []*measurement.Result
     if err := json.Unmarshal(c, &results); err != nil {
         return nil, fmt.Errorf("json.Unmarshal(%s): %s", file, err.Error())
     }

@@ -56,7 +56,7 @@ func (h *Http) get(url string) ([]byte, error) {
     return c, nil
 }
 
-func (h *Http) MeasurementResults(p Params) ([]measurement.Result, error) {
+func (h *Http) MeasurementResults(p Params) ([]*measurement.Result, error) {
     var qstr []string
     var pk string
 
@@ -93,7 +93,7 @@ func (h *Http) MeasurementResults(p Params) ([]measurement.Result, error) {
 
     url := fmt.Sprintf("%s/%s/results?format=json", MeasurementsUrl, url.PathEscape(pk))
     if len(qstr) > 0 {
-        url += strings.Join(qstr, "&")
+        url += "&" + strings.Join(qstr, "&")
     }
 
     c, err := h.get(url)
@@ -101,7 +101,7 @@ func (h *Http) MeasurementResults(p Params) ([]measurement.Result, error) {
         return nil, err
     }
 
-    var results []measurement.Result
+    var results []*measurement.Result
     if err := json.Unmarshal(c, &results); err != nil {
         return nil, fmt.Errorf("json.Unmarshal(%s): %s", url, err.Error())
     }
