@@ -80,7 +80,7 @@ func (r *Resultset) DstName() string {
 }
 
 // DNS error message, nil if not present.
-func (r *Resultset) Error() *Error {
+func (r *Resultset) DnsError() *Error {
     return r.error
 }
 
