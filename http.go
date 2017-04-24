@@ -22,7 +22,7 @@ package ripeatlas
 import (
     "encoding/json"
     "fmt"
-    "io/ioutil"
+    "io"
     "net/http"
     "net/url"
     "strings"
@@ -41,23 +41,51 @@ func NewHttp() *Http {
     return &Http{}
 }
 
-func (h *Http) get(url string) ([]byte, error) {
+func (h *Http) get(url string, fragmented bool) (<-chan *measurement.Result, error) {
     r, err := http.Get(url)
     if err != nil {
         return nil, fmt.Errorf("http.Get(%s): %s", url, err.Error())
     }
 
-    c, err := ioutil.ReadAll(r.Body)
-    r.Body.Close()
-    if err != nil {
-        return nil, fmt.Errorf("ioutil.ReadAll(%s): %s", url, err.Error())
-    }
+    ch := make(chan *measurement.Result)
+    go func() {
+        d := json.NewDecoder(r.Body)
+        defer r.Body.Close()
 
-    return c, nil
+        if fragmented {
+            for {
+                var r measurement.Result
+                if err := d.Decode(&r); err == io.EOF {
+                    break
+                } else if err != nil {
+                    r.ParseError = fmt.Errorf("json.Decode(%s): %s", url, err.Error())
+                    ch <- &r
+                    break
+                }
+                ch <- &r
+            }
+        } else {
+            var r []*measurement.Result
+            if err := d.Decode(&r); err != nil {
+                if err != io.EOF {
+                    r := &measurement.Result{ParseError: fmt.Errorf("json.Decode(%s): %s", url, err.Error())}
+                    ch <- r
+                }
+            } else {
+                for _, i := range r {
+                    ch <- i
+                }
+            }
+        }
+        close(ch)
+    }()
+
+    return ch, nil
 }
 
-func (h *Http) MeasurementLatest(p Params) ([]*measurement.Result, error) {
+func (h *Http) MeasurementLatest(p Params) (<-chan *measurement.Result, error) {
     var pk string
+    var fragmented bool
 
     for k, v := range p {
         switch k {
@@ -67,6 +95,12 @@ func (h *Http) MeasurementLatest(p Params) ([]*measurement.Result, error) {
                 return nil, fmt.Errorf("Invalid %s parameter, must be string", k)
             }
             pk = v
+        case "fragmented":
+            v, ok := v.(bool)
+            if !ok {
+                return nil, fmt.Errorf("Invalid %s parameter, must be bool", k)
+            }
+            fragmented = v
         default:
             return nil, fmt.Errorf("Invalid parameter %s", k)
         }
@@ -76,24 +110,20 @@ func (h *Http) MeasurementLatest(p Params) ([]*measurement.Result, error) {
         return nil, fmt.Errorf("Required parameter pk missing")
     }
 
-    url := fmt.Sprintf("%s/%s/latest?format=json", MeasurementsUrl, url.PathEscape(pk))
-
-    c, err := h.get(url)
-    if err != nil {
-        return nil, err
+    url := fmt.Sprintf("%s/%s/latest", MeasurementsUrl, url.PathEscape(pk))
+    if fragmented {
+        url += "?format=txt"
+    } else {
+        url += "?format=json"
     }
 
-    var results []*measurement.Result
-    if err := json.Unmarshal(c, &results); err != nil {
-        return nil, fmt.Errorf("json.Unmarshal(%s): %s", url, err.Error())
-    }
-
-    return results, nil
+    return h.get(url, fragmented)
 }
 
-func (h *Http) MeasurementResults(p Params) ([]*measurement.Result, error) {
+func (h *Http) MeasurementResults(p Params) (<-chan *measurement.Result, error) {
     var qstr []string
     var pk string
+    var fragmented bool
 
     for k, v := range p {
         switch k {
@@ -117,6 +147,12 @@ func (h *Http) MeasurementResults(p Params) ([]*measurement.Result, error) {
             fallthrough
         case "public-only":
             return nil, fmt.Errorf("Unimplemented parameter %s", k)
+        case "fragmented":
+            v, ok := v.(bool)
+            if !ok {
+                return nil, fmt.Errorf("Invalid %s parameter, must be bool", k)
+            }
+            fragmented = v
         default:
             return nil, fmt.Errorf("Invalid parameter %s", k)
         }
@@ -126,20 +162,15 @@ func (h *Http) MeasurementResults(p Params) ([]*measurement.Result, error) {
         return nil, fmt.Errorf("Required parameter pk missing")
     }
 
-    url := fmt.Sprintf("%s/%s/results?format=json", MeasurementsUrl, url.PathEscape(pk))
+    url := fmt.Sprintf("%s/%s/results", MeasurementsUrl, url.PathEscape(pk))
+    if fragmented {
+        url += "?format=txt"
+    } else {
+        url += "?format=json"
+    }
     if len(qstr) > 0 {
         url += "&" + strings.Join(qstr, "&")
     }
 
-    c, err := h.get(url)
-    if err != nil {
-        return nil, err
-    }
-
-    var results []*measurement.Result
-    if err := json.Unmarshal(c, &results); err != nil {
-        return nil, fmt.Errorf("json.Unmarshal(%s): %s", url, err.Error())
-    }
-
-    return results, nil
+    return h.get(url, fragmented)
 }

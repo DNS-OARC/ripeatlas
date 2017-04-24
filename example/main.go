@@ -13,12 +13,14 @@ var start int
 var stop int
 var last int
 var file bool
+var frag bool
 
 func init() {
     flag.IntVar(&start, "start", 0, "start unixtime for results")
     flag.IntVar(&stop, "stop", 0, "stop unixtime for results")
     flag.IntVar(&last, "last", 0, "last N seconds of results, not used if start/stop are used")
     flag.BoolVar(&file, "file", false, "arguments given are files to read (default measurement ids to query for over HTTP)")
+    flag.BoolVar(&frag, "frag", false, "if true, use/input is fragmented JSON")
 }
 
 func main() {
@@ -45,22 +47,29 @@ func main() {
     }
 
     for _, arg := range flag.Args() {
-        var results []*measurement.Result
+        var results <-chan *measurement.Result
         var err error
 
         if file {
-            results, err = msm.MeasurementResults(ripeatlas.Params{"file": arg})
+            results, err = msm.MeasurementResults(ripeatlas.Params{
+                "file":       arg,
+                "fragmented": frag,
+            })
             if err != nil {
                 log.Fatalf(err.Error())
             }
         } else {
             if latest {
-                results, err = msm.MeasurementLatest(ripeatlas.Params{"pk": arg})
+                results, err = msm.MeasurementLatest(ripeatlas.Params{
+                    "pk":         arg,
+                    "fragmented": frag,
+                })
             } else {
                 results, err = msm.MeasurementResults(ripeatlas.Params{
-                    "start": startTime.Unix(),
-                    "stop":  stopTime.Unix(),
-                    "pk":    arg,
+                    "start":      startTime.Unix(),
+                    "stop":       stopTime.Unix(),
+                    "pk":         arg,
+                    "fragmented": frag,
                 })
             }
 
@@ -69,7 +78,11 @@ func main() {
             }
         }
 
-        for _, r := range results {
+        for r := range results {
+            if r.ParseError != nil {
+                log.Println(r.ParseError.Error())
+                break
+            }
             log.Printf("%d %s", r.MsmId(), r.Type())
 
             switch r.Type() {
