@@ -25,7 +25,7 @@ import (
 )
 
 type Resultset struct {
-    Data struct {
+    data struct {
         Af        int             `json:"af"`
         DstAddr   string          `json:"dst_addr"`
         DstName   string          `json:"dst_name"`
@@ -43,20 +43,20 @@ type Resultset struct {
 }
 
 func (r *Resultset) UnmarshalJSON(b []byte) error {
-    if err := json.Unmarshal(b, &r.Data); err != nil {
+    if err := json.Unmarshal(b, &r.data); err != nil {
         fmt.Printf("%s\n", string(b))
         return err
     }
 
-    if r.Data.Error != nil {
+    if r.data.Error != nil {
         r.error = &Error{}
-        if err := json.Unmarshal(r.Data.Error, r.error); err != nil {
+        if err := json.Unmarshal(r.data.Error, r.error); err != nil {
             return fmt.Errorf("Unable to process DNS error: %s", err.Error())
         }
     }
-    if r.Data.Result != nil {
+    if r.data.Result != nil {
         r.result = &Result{}
-        if err := json.Unmarshal(r.Data.Result, r.result); err != nil {
+        if err := json.Unmarshal(r.data.Result, r.result); err != nil {
             return fmt.Errorf("Unable to process DNS result: %s", err.Error())
         }
     }
@@ -66,21 +66,21 @@ func (r *Resultset) UnmarshalJSON(b []byte) error {
 
 // IP version: "4" or "6" (optional).
 func (r *Resultset) Af() int {
-    return r.Data.Af
+    return r.data.Af
 }
 
 // IP address of the destination (optional).
 func (r *Resultset) DstAddr() string {
-    return r.Data.DstAddr
+    return r.data.DstAddr
 }
 
 // Hostname of the destination (optional).
 func (r *Resultset) DstName() string {
-    return r.Data.DstName
+    return r.data.DstName
 }
 
 // DNS error message, nil if not present.
-func (r *Resultset) Error() *Error {
+func (r *Resultset) DnsError() *Error {
     return r.error
 }
 
@@ -88,17 +88,17 @@ func (r *Resultset) Error() *Error {
 // was found to be in sync with that of a controller. The value -1 is used
 // to indicate that the probe does not know whether it is in sync.
 func (r *Resultset) Lts() int {
-    return r.Data.Lts
+    return r.data.Lts
 }
 
 // Protocol, "TCP" or "UDP".
 func (r *Resultset) Proto() string {
-    return r.Data.Proto
+    return r.data.Proto
 }
 
 // Query payload buffer which was sent to the server, UU encoded (optional).
 func (r *Resultset) Qbuf() string {
-    return r.Data.Qbuf
+    return r.data.Qbuf
 }
 
 // DNS response from the DNS server, nil if not present.
@@ -108,10 +108,10 @@ func (r *Resultset) Result() *Result {
 
 // Retry count (optional).
 func (r *Resultset) Retry() int {
-    return r.Data.Retry
+    return r.data.Retry
 }
 
 // Start time, in Unix timestamp.
 func (r *Resultset) Timestamp() int {
-    return r.Data.Timestamp
+    return r.data.Timestamp
 }

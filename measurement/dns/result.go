@@ -29,7 +29,7 @@ import (
 
 // Response from the DNS server.
 type Result struct {
-    Data struct {
+    data struct {
         Ancount int             `json:"ANCOUNT"`
         Arcount int             `json:"ARCOUNT"`
         Id      int             `json:"ID"`
@@ -48,13 +48,13 @@ type Result struct {
 }
 
 func (r *Result) UnmarshalJSON(b []byte) error {
-    if err := json.Unmarshal(b, &r.Data); err != nil {
+    if err := json.Unmarshal(b, &r.data); err != nil {
         fmt.Printf("%s\n", string(b))
         return err
     }
 
-    if r.Data.Answers != nil {
-        if err := json.Unmarshal(r.Data.Answers, &r.answers); err != nil {
+    if r.data.Answers != nil {
+        if err := json.Unmarshal(r.data.Answers, &r.answers); err != nil {
             return fmt.Errorf("Unable to process DNS answers: %s", err.Error())
         }
     }
@@ -64,32 +64,32 @@ func (r *Result) UnmarshalJSON(b []byte) error {
 
 // Answer count.
 func (r *Result) Ancount() int {
-    return r.Data.Ancount
+    return r.data.Ancount
 }
 
 // Additional record count.
 func (r *Result) Arcount() int {
-    return r.Data.Arcount
+    return r.data.Arcount
 }
 
 // Query ID.
 func (r *Result) Id() int {
-    return r.Data.Id
+    return r.data.Id
 }
 
 // Name server count.
 func (r *Result) Nscount() int {
-    return r.Data.Nscount
+    return r.data.Nscount
 }
 
 // Number of queries.
 func (r *Result) Qdcount() int {
-    return r.Data.Qdcount
+    return r.data.Qdcount
 }
 
 // Answer payload buffer from the server, UU encoded.
 func (r *Result) Abuf() string {
-    return r.Data.Abuf
+    return r.data.Abuf
 }
 
 // First two records from the response decoded by the probe, if they are
@@ -100,35 +100,35 @@ func (r *Result) Answers() []*Answer {
 
 // Response time in milli seconds (optional).
 func (r *Result) Rt() float64 {
-    return r.Data.Rt
+    return r.data.Rt
 }
 
 // Response size (optional).
 func (r *Result) Size() int {
-    return r.Data.Size
+    return r.data.Size
 }
 
 // The source IP address added by the probe (optional).
 func (r *Result) SrcAddr() string {
-    return r.Data.SrcAddr
+    return r.data.SrcAddr
 }
 
 // Sequence number of this result within a group of results, available
 // if the resolution is done by the probe's local resolver (optional).
 func (r *Result) Subid() int {
-    return r.Data.Subid
+    return r.data.Subid
 }
 
 // Total number of results within a group (optional).
 func (r *Result) Submax() int {
-    return r.Data.Submax
+    return r.data.Submax
 }
 
 // Decode the Abuf(), returns a *Msg from the github.com/miekg/dns package.
 func (r *Result) UnpackAbuf() (*mdns.Msg, error) {
     m := &mdns.Msg{}
-    if r.Data.Abuf != "" {
-        b, err := base64.StdEncoding.DecodeString(r.Data.Abuf)
+    if r.data.Abuf != "" {
+        b, err := base64.StdEncoding.DecodeString(r.data.Abuf)
         if err != nil {
             return nil, err
         }

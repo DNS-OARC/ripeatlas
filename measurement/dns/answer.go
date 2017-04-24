@@ -27,7 +27,7 @@ import (
 // First two records from the response decoded by the probe, if they are
 // TXT or SOA; other RR can be decoded from "abuf"
 type Answer struct {
-    Data struct {
+    data struct {
         Mname  string      `json:"MNAME"`
         Name   string      `json:"NAME"`
         Rdata  interface{} `json:"RDATA"`
@@ -41,16 +41,16 @@ type Answer struct {
 }
 
 func (a *Answer) UnmarshalJSON(b []byte) error {
-    if err := json.Unmarshal(b, &a.Data); err != nil {
+    if err := json.Unmarshal(b, &a.data); err != nil {
         fmt.Printf("%s\n", string(b))
         return err
     }
 
-    switch a.Data.Rdata.(type) {
+    switch a.data.Rdata.(type) {
     case string:
-        a.rdata = []string{a.Data.Rdata.(string)}
+        a.rdata = []string{a.data.Rdata.(string)}
     case []interface{}:
-        for _, i := range a.Data.Rdata.([]interface{}) {
+        for _, i := range a.data.Rdata.([]interface{}) {
             switch i.(type) {
             case string:
                 a.rdata = append(a.rdata, i.(string))
@@ -59,7 +59,7 @@ func (a *Answer) UnmarshalJSON(b []byte) error {
             }
         }
     default:
-        return fmt.Errorf("RDATA field unsupported type %T", a.Data.Rdata)
+        return fmt.Errorf("RDATA field unsupported type %T", a.data.Rdata)
     }
 
     return nil
@@ -67,12 +67,12 @@ func (a *Answer) UnmarshalJSON(b []byte) error {
 
 // If the type is "SOA" this will have the original or primary domain name.
 func (a *Answer) Mname() string {
-    return a.Data.Mname
+    return a.data.Mname
 }
 
 // Domain name.
 func (a *Answer) Name() string {
-    return a.Data.Name
+    return a.data.Name
 }
 
 // If the type is "TXT" this will have the value of that record.
@@ -82,20 +82,20 @@ func (a *Answer) Rdata() []string {
 
 // If the type is "SOA" this will have the mailbox.
 func (a *Answer) Rname() string {
-    return a.Data.Rname
+    return a.data.Rname
 }
 
 // If the type is "SOA" this will have the zone serial number.
 func (a *Answer) Serial() int {
-    return a.Data.Serial
+    return a.data.Serial
 }
 
 // If the type is "SOA" this will have the time to live.
 func (a *Answer) Ttl() int {
-    return a.Data.Ttl
+    return a.data.Ttl
 }
 
 // Resource record type ("SOA" or "TXT").
 func (a *Answer) Type() string {
-    return a.Data.Type
+    return a.data.Type
 }
