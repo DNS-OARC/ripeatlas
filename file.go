@@ -23,7 +23,6 @@ import (
     "encoding/json"
     "fmt"
     "io/ioutil"
-    "os"
 
     "github.com/DNS-OARC/ripeatlas/measurement"
 )
@@ -33,21 +32,6 @@ type File struct {
 
 func NewFile() *File {
     return &File{}
-}
-
-func (f *File) read(file string) ([]byte, error) {
-    r, err := os.Open(file)
-    defer r.Close()
-    if err != nil {
-        return nil, fmt.Errorf("os.Open(%s): %s", file, err.Error())
-    }
-
-    c, err := ioutil.ReadAll(r)
-    if err != nil {
-        return nil, fmt.Errorf("ioutil.ReadAll(%s): %s", file, err.Error())
-    }
-
-    return c, nil
 }
 
 func (f *File) MeasurementLatest(p Params) ([]*measurement.Result, error) {
@@ -74,9 +58,9 @@ func (f *File) MeasurementResults(p Params) ([]*measurement.Result, error) {
         return nil, fmt.Errorf("Required parameter file missing")
     }
 
-    c, err := f.read(file)
+    c, err := ioutil.ReadFile(file)
     if err != nil {
-        return nil, err
+        return nil, fmt.Errorf("ioutil.ReadFile(%s): %s", file, err.Error())
     }
 
     var results []*measurement.Result
