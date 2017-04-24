@@ -43,6 +43,7 @@ traceroute | 4610 to 4760 | Done
 http | 4610 to 4760 | Done
 ntp | 4610 to 4760 | Done
 sslcert | 4610 to 4760 | Done
+wifi | 4610 to 4760 | Done (undocumented by RIPE)
 
 ## Usage
 
