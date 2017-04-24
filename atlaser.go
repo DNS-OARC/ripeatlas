@@ -26,6 +26,6 @@ import (
 type Params map[string]interface{}
 
 type Atlaser interface {
-    MeasurementLatest(p Params) ([]*measurement.Result, error)
-    MeasurementResults(p Params) ([]*measurement.Result, error)
+    MeasurementLatest(p Params) (<-chan *measurement.Result, error)
+    MeasurementResults(p Params) (<-chan *measurement.Result, error)
 }

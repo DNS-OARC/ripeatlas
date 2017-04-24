@@ -53,16 +53,30 @@ import (
     "github.com/DNS-OARC/ripeatlas"
 )
 
-r := ripeatlas.Atlaser(ripeatlas.NewFile())
-rs, _ := r.MeasurementResults(ripeatlas.Params{"file": name})
-for _, i := range rs {
-    fmt.Printf("%d %s\n", i.MsmId(), i.Type())
+// Read Atlas results from a file
+a := ripeatlas.Atlaser(ripeatlas.NewFile())
+c, err := a.MeasurementResults(ripeatlas.Params{"file": name})
+if err != nil {
+    ...
+}
+for r := range c {
+    if r.ParseError != nil {
+        ...
+    }
+    fmt.Printf("%d %s\n", r.MsmId(), r.Type())
 }
 
-r := ripeatlas.Atlaser(ripeatlas.NewHttp())
-rs, _ := r.MeasurementResults(ripeatlas.Params{"pk": id})
-for _, i := range rs {
-    fmt.Printf("%d %s\n", i.MsmId(), i.Type())
+// Read Atlas results using REST API
+a := ripeatlas.Atlaser(ripeatlas.NewHttp())
+c, err := a.MeasurementResults(ripeatlas.Params{"pk": id})
+if err != nil {
+    ...
+}
+for r := range c {
+    if r.ParseError != nil {
+        ...
+    }
+    fmt.Printf("%d %s\n", r.MsmId(), r.Type())
 }
 ```
 

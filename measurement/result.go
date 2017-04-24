@@ -36,6 +36,8 @@ import (
 // A measurement result object, data availability depends on the type
 // of measurement and some attributes are shared between measurements.
 type Result struct {
+    ParseError error
+
     data struct {
         // DNS and shared data
         Fw         int             `json:"fw"`

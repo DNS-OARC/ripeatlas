@@ -22,7 +22,8 @@ package ripeatlas
 import (
     "encoding/json"
     "fmt"
-    "io/ioutil"
+    "io"
+    "os"
 
     "github.com/DNS-OARC/ripeatlas/measurement"
 )
@@ -34,12 +35,13 @@ func NewFile() *File {
     return &File{}
 }
 
-func (f *File) MeasurementLatest(p Params) ([]*measurement.Result, error) {
+func (f *File) MeasurementLatest(p Params) (<-chan *measurement.Result, error) {
     return f.MeasurementResults(p)
 }
 
-func (f *File) MeasurementResults(p Params) ([]*measurement.Result, error) {
+func (f *File) MeasurementResults(p Params) (<-chan *measurement.Result, error) {
     var file string
+    var fragmented bool
 
     for k, v := range p {
         switch k {
@@ -49,6 +51,12 @@ func (f *File) MeasurementResults(p Params) ([]*measurement.Result, error) {
                 return nil, fmt.Errorf("Invalid %s parameter, must be string", k)
             }
             file = v
+        case "fragmented":
+            v, ok := v.(bool)
+            if !ok {
+                return nil, fmt.Errorf("Invalid %s parameter, must be bool", k)
+            }
+            fragmented = v
         default:
             return nil, fmt.Errorf("Invalid parameter %s", k)
         }
@@ -58,15 +66,43 @@ func (f *File) MeasurementResults(p Params) ([]*measurement.Result, error) {
         return nil, fmt.Errorf("Required parameter file missing")
     }
 
-    c, err := ioutil.ReadFile(file)
+    r, err := os.Open(file)
     if err != nil {
-        return nil, fmt.Errorf("ioutil.ReadFile(%s): %s", file, err.Error())
+        return nil, fmt.Errorf("os.Open(%s): %s", file, err.Error())
     }
 
-    var results []*measurement.Result
-    if err := json.Unmarshal(c, &results); err != nil {
-        return nil, fmt.Errorf("json.Unmarshal(%s): %s", file, err.Error())
-    }
+    ch := make(chan *measurement.Result)
+    go func() {
+        d := json.NewDecoder(r)
+        defer r.Close()
 
-    return results, nil
+        if fragmented {
+            for {
+                var r measurement.Result
+                if err := d.Decode(&r); err == io.EOF {
+                    break
+                } else if err != nil {
+                    r.ParseError = fmt.Errorf("json.Decode(%s): %s", file, err.Error())
+                    ch <- &r
+                    break
+                }
+                ch <- &r
+            }
+        } else {
+            var r []*measurement.Result
+            if err := d.Decode(&r); err != nil {
+                if err != io.EOF {
+                    r := &measurement.Result{ParseError: fmt.Errorf("json.Decode(%s): %s", file, err.Error())}
+                    ch <- r
+                }
+            } else {
+                for _, i := range r {
+                    ch <- i
+                }
+            }
+        }
+        close(ch)
+    }()
+
+    return ch, nil
 }
