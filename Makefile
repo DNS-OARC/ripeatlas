@@ -1,6 +1,8 @@
 SOURCES := $(wildcard *.go) \
     $(wildcard measurement/*.go) \
-    $(wildcard measurement/dns/*.go)
+    $(wildcard measurement/dns/*.go) \
+    $(wildcard measurement/ping/*.go) \
+    $(wildcard measurement/traceroute/*.go)
 
 EXAMPLE_SOURCES = $(wildcard example/*.go)
 

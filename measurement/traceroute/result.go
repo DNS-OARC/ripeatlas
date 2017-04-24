@@ -17,60 +17,50 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with ripeatlas.  If not, see <http://www.gnu.org/licenses/>.
 
-package ping
+package traceroute
 
 import (
     "encoding/json"
     "fmt"
 )
 
-// Ping result.
+// Traceroute result.
 type Result struct {
     data struct {
-        X       string  `json:"x"`
-        Error   string  `json:"error"`
-        Rtt     float64 `json:"rtt"`
-        SrcAddr string  `json:"src_Addr"`
-        Ttl     int     `json:"ttl"`
-        Dup     int     `json:"dup"`
+        Hop    int             `json:"hop"`
+        Error  string          `json:"error"`
+        Result json.RawMessage `json:"result"`
     }
+
+    replies []*Reply
 }
 
 func (r *Result) UnmarshalJSON(b []byte) error {
     if err := json.Unmarshal(b, &r.data); err != nil {
         return fmt.Errorf("%s for %s", err.Error(), string(b))
     }
+
+    if r.data.Result != nil {
+        if err := json.Unmarshal(r.data.Result, &r.replies); err != nil {
+            return fmt.Errorf("Unable to process Replies: %s", err.Error())
+        }
+    }
+
     return nil
 }
 
-// On timeout: "*".
-func (r *Result) X() string {
-    return r.data.X
+// Hop number.
+func (r *Result) Hop() int {
+    return r.data.Hop
 }
 
-// On error: description of error.
+// When an error occurs trying to send a packet. In that case there will
+// not be a result structure (optional).
 func (r *Result) Error() string {
     return r.data.Error
 }
 
-// On reply: round-trip-time in milliseconds.
-func (r *Result) Rtt() float64 {
-    return r.data.Rtt
-}
-
-// On reply: source address if different from the source address in first
-// reply (optional).
-func (r *Result) SrcAddr() string {
-    return r.data.SrcAddr
-}
-
-// On reply: time-to-live reply if different from ttl in first reply
-// (optional).
-func (r *Result) Ttl() int {
-    return r.data.Ttl
-}
-
-// On reply: signals that the reply is a duplicate (optional).
-func (r *Result) Dup() int {
-    return r.data.Dup
+// Traceroute replies (results).
+func (r *Result) Replies() []*Reply {
+    return r.replies
 }
