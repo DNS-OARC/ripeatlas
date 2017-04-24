@@ -25,7 +25,7 @@ import (
 
 type Params map[string]interface{}
 
-type Reader interface {
+type Atlaser interface {
     MeasurementLatest(p Params) ([]*measurement.Result, error)
     MeasurementResults(p Params) ([]*measurement.Result, error)
 }

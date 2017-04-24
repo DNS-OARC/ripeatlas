@@ -24,8 +24,8 @@ Implementation status of API calls described by https://atlas.ripe.net/docs/api/
 
 Call | Status | Func
 ---- | ------ | -----
-/api/v2/measurements/{pk}/latest/ | Done | Reader.MeasurementLatest()
-/api/v2/measurements/{pk}/results/ | Done | Reader.MeasurementResults()
+/api/v2/measurements/{pk}/latest/ | Done | Atlaser.MeasurementLatest()
+/api/v2/measurements/{pk}/results/ | Done | Atlaser.MeasurementResults()
 
 ### participation-requests
 
@@ -47,13 +47,13 @@ import (
     "github.com/DNS-OARC/ripeatlas"
 )
 
-r := ripeatlas.Reader(ripeatlas.NewFile())
+r := ripeatlas.Atlaser(ripeatlas.NewFile())
 rs, _ := r.MeasurementResults(ripeatlas.Params{"file": name})
 for _, i := range rs {
     fmt.Printf("%d %s\n", i.MsmId(), i.Type())
 }
 
-r := ripeatlas.Reader(ripeatlas.NewHttp())
+r := ripeatlas.Atlaser(ripeatlas.NewHttp())
 rs, _ := r.MeasurementResults(ripeatlas.Params{"pk": id})
 for _, i := range rs {
     fmt.Printf("%d %s\n", i.MsmId(), i.Type())

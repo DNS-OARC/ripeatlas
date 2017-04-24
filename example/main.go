@@ -37,7 +37,7 @@ func main() {
         latest = true
     }
 
-    var msm ripeatlas.Reader
+    var msm ripeatlas.Atlaser
     if file {
         msm = ripeatlas.NewFile()
     } else {
