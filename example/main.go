@@ -17,7 +17,7 @@ var file bool
 func init() {
     flag.IntVar(&start, "start", 0, "start unixtime for results")
     flag.IntVar(&stop, "stop", 0, "stop unixtime for results")
-    flag.IntVar(&last, "last", 0, "last N seconds of results (default 1 hour), not used if start/stop are used")
+    flag.IntVar(&last, "last", 0, "last N seconds of results, not used if start/stop are used")
     flag.BoolVar(&file, "file", false, "arguments given are files to read (default measurement ids to query for over HTTP)")
 }
 
@@ -25,16 +25,16 @@ func main() {
     flag.Parse()
 
     var startTime, stopTime time.Time
+    var latest bool
 
-    if start == 0 && stop == 0 {
-        last = 3600
-    }
     if last > 0 {
         stopTime = time.Now()
         startTime = stopTime.Add(time.Duration(-last) * time.Second)
-    } else {
+    } else if start > 0 && stop > 0 {
         startTime = time.Unix(int64(start), 0)
         stopTime = time.Unix(int64(stop), 0)
+    } else {
+        latest = true
     }
 
     var msm ripeatlas.Reader
@@ -43,8 +43,6 @@ func main() {
     } else {
         msm = ripeatlas.NewHttp()
     }
-
-    t := ripeatlas.Reader(ripeatlas.NewHttp())
 
     for _, arg := range flag.Args() {
         var results []*measurement.Result
@@ -56,11 +54,16 @@ func main() {
                 log.Fatalf(err.Error())
             }
         } else {
-            results, err = msm.MeasurementResults(ripeatlas.Params{
-                "start": startTime.Unix(),
-                "stop":  stopTime.Unix(),
-                "pk":    arg,
-            })
+            if latest {
+                results, err = msm.MeasurementLatest(ripeatlas.Params{"pk": arg})
+            } else {
+                results, err = msm.MeasurementResults(ripeatlas.Params{
+                    "start": startTime.Unix(),
+                    "stop":  stopTime.Unix(),
+                    "pk":    arg,
+                })
+            }
+
             if err != nil {
                 log.Fatalf(err.Error())
             }

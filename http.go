@@ -56,6 +56,41 @@ func (h *Http) get(url string) ([]byte, error) {
     return c, nil
 }
 
+func (h *Http) MeasurementLatest(p Params) ([]*measurement.Result, error) {
+    var pk string
+
+    for k, v := range p {
+        switch k {
+        case "pk":
+            v, ok := v.(string)
+            if !ok {
+                return nil, fmt.Errorf("Invalid %s parameter, must be string", k)
+            }
+            pk = v
+        default:
+            return nil, fmt.Errorf("Invalid parameter %s", k)
+        }
+    }
+
+    if pk == "" {
+        return nil, fmt.Errorf("Required parameter pk missing")
+    }
+
+    url := fmt.Sprintf("%s/%s/latest?format=json", MeasurementsUrl, url.PathEscape(pk))
+
+    c, err := h.get(url)
+    if err != nil {
+        return nil, err
+    }
+
+    var results []*measurement.Result
+    if err := json.Unmarshal(c, &results); err != nil {
+        return nil, fmt.Errorf("json.Unmarshal(%s): %s", url, err.Error())
+    }
+
+    return results, nil
+}
+
 func (h *Http) MeasurementResults(p Params) ([]*measurement.Result, error) {
     var qstr []string
     var pk string
