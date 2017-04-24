@@ -94,6 +94,12 @@ type Result struct {
         Rt     float64         `json:"rt"`
         Ttc    float64         `json:"ttc"`
         Ver    string          `json:"ver"`
+
+        // Wifi data (uses shared)
+        Bundle        int               `json:"bundle"`
+        MsmName       string            `json:"msm_name"`
+        GroupId       int               `json:"group_id"`
+        WpaSupplicant map[string]string `json:"wpa_supplicant"`
     }
 
     dnsError      *dns.Error
@@ -383,6 +389,26 @@ func (r *Result) Ttc() float64 {
 // (SSL) protocol version.
 func (r *Result) Ver() string {
     return r.data.Ver
+}
+
+// Wifi bundle (undocumented).
+func (r *Result) Bundle() int {
+    return r.data.Bundle
+}
+
+// Wifi msm_name (undocumented).
+func (r *Result) MsmName() string {
+    return r.data.MsmName
+}
+
+// Wifi group_id (undocumented).
+func (r *Result) GroupId() int {
+    return r.data.GroupId
+}
+
+// Wifi wpa_supplicant (undocumented).
+func (r *Result) WpaSupplicant() map[string]string {
+    return r.data.WpaSupplicant
 }
 
 // DNS error message, nil if the type of measurement is not "dns" (optional).

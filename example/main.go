@@ -105,6 +105,10 @@ func main() {
                 if len(r.Cert()) > 0 {
                     log.Printf("%s", r.Cert()[0])
                 }
+            case "wifi":
+                for k, v := range r.WpaSupplicant() {
+                    log.Printf("%s: %v", k, v)
+                }
             }
         }
     }
