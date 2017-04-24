@@ -17,50 +17,34 @@
 // You should have received a copy of the GNU Lesser General Public License
 // along with ripeatlas.  If not, see <http://www.gnu.org/licenses/>.
 
-package traceroute
+package http
 
 import (
     "encoding/json"
     "fmt"
 )
 
-// Traceroute result.
-type Result struct {
+// HTTP timing result.
+type Readtiming struct {
     data struct {
-        Hop    int             `json:"hop"`
-        Error  string          `json:"error"`
-        Result json.RawMessage `json:"result"`
+        T float64 `json:"t"`
+        O int     `json:"o,string"` // TODO: Not documented as string
     }
-
-    replies []*Reply
 }
 
-func (r *Result) UnmarshalJSON(b []byte) error {
+func (r *Readtiming) UnmarshalJSON(b []byte) error {
     if err := json.Unmarshal(b, &r.data); err != nil {
         return fmt.Errorf("%s for %s", err.Error(), string(b))
     }
-
-    if r.data.Result != nil {
-        if err := json.Unmarshal(r.data.Result, &r.replies); err != nil {
-            return fmt.Errorf("Unable to process Replies: %s", err.Error())
-        }
-    }
-
     return nil
 }
 
-// Hop number.
-func (r *Result) Hop() int {
-    return r.data.Hop
+// Time since starting to connect when data is received (in milli seconds).
+func (r *Readtiming) T() float64 {
+    return r.data.T
 }
 
-// When an error occurs trying to send a packet. In that case there will
-// not be a result structure (optional).
-func (r *Result) Error() string {
-    return r.data.Error
-}
-
-// Traceroute replies (called "result" in RIPE Atlas API documentation).
-func (r *Result) Replies() []*Reply {
-    return r.replies
+// Offset in stream of reply data.
+func (r *Readtiming) O() int {
+    return r.data.O
 }

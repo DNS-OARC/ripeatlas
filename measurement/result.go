@@ -25,6 +25,7 @@ import (
     "fmt"
 
     "github.com/DNS-OARC/ripeatlas/measurement/dns"
+    "github.com/DNS-OARC/ripeatlas/measurement/http"
     "github.com/DNS-OARC/ripeatlas/measurement/ping"
     "github.com/DNS-OARC/ripeatlas/measurement/traceroute"
     mdns "github.com/miekg/dns"
@@ -99,6 +100,8 @@ type Result struct {
     pingResults []*ping.Result
 
     tracerouteResults []*traceroute.Result
+
+    httpResults []*http.Result
 }
 
 func (r *Result) UnmarshalJSON(b []byte) error {
@@ -135,6 +138,12 @@ func (r *Result) UnmarshalJSON(b []byte) error {
         if r.data.Result != nil {
             if err := json.Unmarshal(r.data.Result, &r.tracerouteResults); err != nil {
                 return fmt.Errorf("Unable to process Traceroute result (fw %d): %s", r.data.Fw, err.Error())
+            }
+        }
+    case "http":
+        if r.data.Result != nil {
+            if err := json.Unmarshal(r.data.Result, &r.httpResults); err != nil {
+                return fmt.Errorf("Unable to process HTTP result (fw %d): %s", r.data.Fw, err.Error())
             }
         }
     }
@@ -402,4 +411,10 @@ func (r *Result) PingResults() []*ping.Result {
 // "traceroute" (optional).
 func (r *Result) TracerouteResults() []*traceroute.Result {
     return r.tracerouteResults
+}
+
+// HTTP results, nil if the type of measurement is not
+// "http" (optional).
+func (r *Result) HttpResults() []*http.Result {
+    return r.httpResults
 }
