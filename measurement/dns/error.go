@@ -34,8 +34,7 @@ type Error struct {
 
 func (e *Error) UnmarshalJSON(b []byte) error {
     if err := json.Unmarshal(b, &e.data); err != nil {
-        fmt.Printf("%s\n", string(b))
-        return err
+        return fmt.Errorf("%s for %s", err.Error(), string(b))
     }
     return nil
 }

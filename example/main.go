@@ -71,14 +71,22 @@ func main() {
 
         for _, r := range results {
             log.Printf("%d %s", r.MsmId(), r.Type())
-            if r.DnsResult() != nil {
-                m, _ := r.DnsResult().UnpackAbuf()
-                log.Printf("%v", m)
-            }
-            for _, s := range r.DnsResultsets() {
-                if s.Result() != nil {
-                    m, _ := s.Result().UnpackAbuf()
+
+            switch r.Type() {
+            case "dns":
+                if r.DnsResult() != nil {
+                    m, _ := r.DnsResult().UnpackAbuf()
                     log.Printf("%v", m)
+                }
+                for _, s := range r.DnsResultsets() {
+                    if s.Result() != nil {
+                        m, _ := s.Result().UnpackAbuf()
+                        log.Printf("%v", m)
+                    }
+                }
+            case "ping":
+                for _, p := range r.PingResults() {
+                    log.Printf("%v", p.Rtt())
                 }
             }
         }

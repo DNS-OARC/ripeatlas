@@ -42,8 +42,7 @@ type Answer struct {
 
 func (a *Answer) UnmarshalJSON(b []byte) error {
     if err := json.Unmarshal(b, &a.data); err != nil {
-        fmt.Printf("%s\n", string(b))
-        return err
+        return fmt.Errorf("%s for %s", err.Error(), string(b))
     }
 
     switch a.data.Rdata.(type) {

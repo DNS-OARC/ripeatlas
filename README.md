@@ -38,6 +38,11 @@ Implementation status of objects (by type) decribed by https://atlas.ripe.net/do
 Type | Fireware | Status
 ---- | -------- | ------
 dns | 4610 to 4760 | Done
+ping | 4610 to 4760 | Done
+traceroute | 4610 to 4760 | WIP
+http | 4610 to 4760 | WIP
+ntp | 4610 to 4760 | WIP
+sslcert | 4610 to 4760 | WIP
 
 ## Usage
 
