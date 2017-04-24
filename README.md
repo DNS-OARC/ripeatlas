@@ -42,7 +42,7 @@ ping | 4610 to 4760 | Done
 traceroute | 4610 to 4760 | Done
 http | 4610 to 4760 | Done
 ntp | 4610 to 4760 | Done
-sslcert | 4610 to 4760 | WIP
+sslcert | 4610 to 4760 | Done
 
 ## Usage
 

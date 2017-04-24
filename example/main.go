@@ -101,6 +101,10 @@ func main() {
                 for _, n := range r.NtpResults() {
                     log.Printf("%f", n.ReceiveTs())
                 }
+            case "sslcert":
+                if len(r.Cert()) > 0 {
+                    log.Printf("%s", r.Cert()[0])
+                }
             }
         }
     }

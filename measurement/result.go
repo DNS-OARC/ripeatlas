@@ -28,6 +28,7 @@ import (
     "github.com/DNS-OARC/ripeatlas/measurement/http"
     "github.com/DNS-OARC/ripeatlas/measurement/ntp"
     "github.com/DNS-OARC/ripeatlas/measurement/ping"
+    "github.com/DNS-OARC/ripeatlas/measurement/sslcert"
     "github.com/DNS-OARC/ripeatlas/measurement/traceroute"
     mdns "github.com/miekg/dns"
 )
@@ -87,11 +88,12 @@ type Result struct {
         Version        int     `json:"version"`
 
         // Sslcert data (uses shared, ping and ntp data)
-        Cert   []string `json:"cert"`
-        Method string   `json:"method"`
-        Rt     float64  `json:"rt"`
-        Ttc    float64  `json:"ttc"`
-        Ver    string   `json:"ver"`
+        Alert  json.RawMessage `json:"alert"`
+        Cert   []string        `json:"cert"`
+        Method string          `json:"method"`
+        Rt     float64         `json:"rt"`
+        Ttc    float64         `json:"ttc"`
+        Ver    string          `json:"ver"`
     }
 
     dnsError      *dns.Error
@@ -105,6 +107,8 @@ type Result struct {
     httpResults []*http.Result
 
     ntpResults []*ntp.Result
+
+    sslcertAlert *sslcert.Alert
 }
 
 func (r *Result) UnmarshalJSON(b []byte) error {
@@ -153,6 +157,13 @@ func (r *Result) UnmarshalJSON(b []byte) error {
         if r.data.Result != nil {
             if err := json.Unmarshal(r.data.Result, &r.ntpResults); err != nil {
                 return fmt.Errorf("Unable to process NTP result (fw %d): %s", r.data.Fw, err.Error())
+            }
+        }
+    case "sslcert":
+        if r.data.Alert != nil {
+            r.sslcertAlert = &sslcert.Alert{}
+            if err := json.Unmarshal(r.data.Alert, r.sslcertAlert); err != nil {
+                return fmt.Errorf("Unable to process SSL Cert alert (fw %d): %s", r.data.Fw, err.Error())
             }
         }
     }
@@ -432,4 +443,10 @@ func (r *Result) HttpResults() []*http.Result {
 // "ntp" (optional).
 func (r *Result) NtpResults() []*ntp.Result {
     return r.ntpResults
+}
+
+// Error sent by server (see RFC 5246, Section 7.2) (from firmware 4720),
+// nil if the type of measurement is not "sslcert" (optional).
+func (r *Result) SslcertAlert() *sslcert.Alert {
+    return r.sslcertAlert
 }
