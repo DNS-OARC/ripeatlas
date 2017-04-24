@@ -97,6 +97,10 @@ func main() {
                 for _, h := range r.HttpResults() {
                     log.Printf("header %d body %d", h.Hsize(), h.Bsize())
                 }
+            case "ntp":
+                for _, n := range r.NtpResults() {
+                    log.Printf("%f", n.ReceiveTs())
+                }
             }
         }
     }

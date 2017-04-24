@@ -26,6 +26,7 @@ import (
 
     "github.com/DNS-OARC/ripeatlas/measurement/dns"
     "github.com/DNS-OARC/ripeatlas/measurement/http"
+    "github.com/DNS-OARC/ripeatlas/measurement/ntp"
     "github.com/DNS-OARC/ripeatlas/measurement/ping"
     "github.com/DNS-OARC/ripeatlas/measurement/traceroute"
     mdns "github.com/miekg/dns"
@@ -102,6 +103,8 @@ type Result struct {
     tracerouteResults []*traceroute.Result
 
     httpResults []*http.Result
+
+    ntpResults []*ntp.Result
 }
 
 func (r *Result) UnmarshalJSON(b []byte) error {
@@ -144,6 +147,12 @@ func (r *Result) UnmarshalJSON(b []byte) error {
         if r.data.Result != nil {
             if err := json.Unmarshal(r.data.Result, &r.httpResults); err != nil {
                 return fmt.Errorf("Unable to process HTTP result (fw %d): %s", r.data.Fw, err.Error())
+            }
+        }
+    case "ntp":
+        if r.data.Result != nil {
+            if err := json.Unmarshal(r.data.Result, &r.ntpResults); err != nil {
+                return fmt.Errorf("Unable to process NTP result (fw %d): %s", r.data.Fw, err.Error())
             }
         }
     }
@@ -417,4 +426,10 @@ func (r *Result) TracerouteResults() []*traceroute.Result {
 // "http" (optional).
 func (r *Result) HttpResults() []*http.Result {
     return r.httpResults
+}
+
+// NTP results, nil if the type of measurement is not
+// "ntp" (optional).
+func (r *Result) NtpResults() []*ntp.Result {
+    return r.ntpResults
 }
