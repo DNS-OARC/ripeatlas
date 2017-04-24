@@ -25,12 +25,15 @@ import (
     "fmt"
 
     "github.com/DNS-OARC/ripeatlas/measurement/dns"
+    "github.com/DNS-OARC/ripeatlas/measurement/ping"
     mdns "github.com/miekg/dns"
 )
 
-// A measurement result object.
+// A measurement result object, data availability depends on the type
+// of measurement and some attributes are shared between measurements.
 type Result struct {
     data struct {
+        // DNS and shared data
         Fw         int             `json:"fw"`
         Af         int             `json:"af"`
         DstAddr    string          `json:"dst_addr"`
@@ -47,20 +50,61 @@ type Result struct {
         Retry      int             `json:"retry"`
         Timestamp  int             `json:"timestamp"`
         Type       string          `json:"type"`
+
+        // Ping data (uses shared data)
+        Avg     float64 `json:"avg"`
+        Dup     int     `json:"dup"`
+        Max     float64 `json:"max"`
+        Min     float64 `json:"min"`
+        Name    string  `json:"name"`
+        Rcvd    int     `json:"rcvd"`
+        Sent    int     `json:"sent"`
+        Size    int     `json:"size"`
+        SrcAddr string  `json:"src_addr"`
+        Ttl     int     `json:"ttl"`
+
+        // Traceroute data (uses shared and ping data)
+        Endtime int `json:"endtime"`
+        ParisId int `json:"paris_id"`
+
+        // Http data (uses shared data)
+        Uri string `json:"uri"`
+
+        // Ntp data (uses shared and ping data)
+        DstPort        string  `json:"dst_port"`
+        Li             string  `json:"li"`
+        Mode           string  `json:"mode"`
+        Poll           float64 `json:"poll"`
+        Precision      float64 `json:"precision"`
+        RefId          string  `json:"ref-id"`
+        RefTs          float64 `json:"ref-ts"`
+        RootDelay      float64 `json:"root-delay"`
+        RootDispersion float64 `json:"root-dispersion"`
+        Stratum        int     `json:"stratum"`
+        Version        int     `json:"version"`
+
+        // Sslcert data (uses shared, ping and ntp data)
+        Cert   []string `json:"cert"`
+        Method string   `json:"method"`
+        Rt     float64  `json:"rt"`
+        Ttc    float64  `json:"ttc"`
+        Ver    string   `json:"ver"`
     }
 
     dnsError      *dns.Error
     dnsResult     *dns.Result
     dnsResultsets []*dns.Resultset
+
+    pingResults []*ping.Result
 }
 
 func (r *Result) UnmarshalJSON(b []byte) error {
     if err := json.Unmarshal(b, &r.data); err != nil {
-        fmt.Printf("%s\n", string(b))
-        return err
+        return fmt.Errorf("%s for %s", err.Error(), string(b))
     }
 
-    if r.data.Type == "dns" {
+    switch r.data.Type {
+    case "dns":
         if r.data.Error != nil {
             r.dnsError = &dns.Error{}
             if err := json.Unmarshal(r.data.Error, r.dnsError); err != nil {
@@ -76,6 +120,12 @@ func (r *Result) UnmarshalJSON(b []byte) error {
         if r.data.Resultsets != nil {
             if err := json.Unmarshal(r.data.Resultsets, &r.dnsResultsets); err != nil {
                 return fmt.Errorf("Unable to process DNS resultset (fw %d): %s", r.data.Fw, err.Error())
+            }
+        }
+    case "ping":
+        if r.data.Result != nil {
+            if err := json.Unmarshal(r.data.Result, &r.pingResults); err != nil {
+                return fmt.Errorf("Unable to process Ping result (fw %d): %s", r.data.Fw, err.Error())
             }
         }
     }
@@ -125,7 +175,7 @@ func (r *Result) PrbId() int {
     return r.data.PrbId
 }
 
-// Protocol, "TCP" or "UDP".
+// Protocol.
 func (r *Result) Proto() string {
     return r.data.Proto
 }
@@ -150,6 +200,153 @@ func (r *Result) Type() string {
     return r.data.Type
 }
 
+// Average round-trip time.
+func (r *Result) Avg() float64 {
+    return r.data.Avg
+}
+
+// Number of duplicate packets.
+func (r *Result) Dup() int {
+    return r.data.Dup
+}
+
+// Maximum round-trip time.
+func (r *Result) Max() float64 {
+    return r.data.Max
+}
+
+// Minimum round-trip time.
+func (r *Result) Min() float64 {
+    return r.data.Min
+}
+
+// Name of the destination (deprecated).
+func (r *Result) Name() string {
+    return r.data.Name
+}
+
+// Number of packets received.
+func (r *Result) Rcvd() int {
+    return r.data.Rcvd
+}
+
+// Number of packets sent.
+func (r *Result) Sent() int {
+    return r.data.Sent
+}
+
+// Packet size.
+func (r *Result) Size() int {
+    return r.data.Size
+}
+
+// Source address used by probe (missing due to a bug).
+func (r *Result) SrcAddr() string {
+    return r.data.SrcAddr
+}
+
+// Time-to-live field in the first reply (missing due to a bug).
+func (r *Result) Ttl() int {
+    return r.data.Ttl
+}
+
+// Unix timestamp for end of measurement.
+func (r *Result) Endtime() int {
+    return r.data.Endtime
+}
+
+// Variation for the Paris mode of traceroute.
+func (r *Result) ParisId() int {
+    return r.data.ParisId
+}
+
+// Request uri.
+func (r *Result) Uri() string {
+    return r.data.Uri
+}
+
+// Port name.
+func (r *Result) DstPort() string {
+    return r.data.DstPort
+}
+
+// Leap indicator, values "no", "61", "59", or "unknown".
+func (r *Result) Li() string {
+    return r.data.Li
+}
+
+// "server".
+func (r *Result) Mode() string {
+    return r.data.Mode
+}
+
+// Poll interval in seconds.
+func (r *Result) Poll() float64 {
+    return r.data.Poll
+}
+
+// Precision of the server's clock in seconds.
+func (r *Result) Precision() float64 {
+    return r.data.Precision
+}
+
+// Server's reference clock.
+func (r *Result) RefId() string {
+    return r.data.RefId
+}
+
+// Server's reference timestamp in NTP seconds.
+func (r *Result) RefTs() float64 {
+    return r.data.RefTs
+}
+
+// Round-trip delay from server to stratum 0 time source in seconds.
+func (r *Result) RootDelay() float64 {
+    return r.data.RootDelay
+}
+
+// Total dispersion to stratum 0 time source in seconds.
+func (r *Result) RootDispersion() float64 {
+    return r.data.RootDispersion
+}
+
+// Distance in hops from server to primary time source.
+func (r *Result) Stratum() int {
+    return r.data.Stratum
+}
+
+// NTP protocol version.
+func (r *Result) Version() int {
+    return r.data.Version
+}
+
+// Results of query, not present if "alert" is present (optional).
+func (r *Result) Cert() []string {
+    return r.data.Cert
+}
+
+// "SSL".
+func (r *Result) Method() string {
+    return r.data.Method
+}
+
+// Response time in milli seconds from starting to connect to receving
+// the certificates (optional).
+func (r *Result) Rt() float64 {
+    return r.data.Rt
+}
+
+// Time in milli seconds that it took to connect (over TCP) to the
+// target (optional).
+func (r *Result) Ttc() float64 {
+    return r.data.Ttc
+}
+
+// (SSL) protocol version.
+func (r *Result) Ver() string {
+    return r.data.Ver
+}
+
 // DNS error message, nil if the type of measurement is not "dns" (optional).
 func (r *Result) DnsError() *dns.Error {
     return r.dnsError
@@ -165,6 +362,11 @@ func (r *Result) DnsResult() *dns.Result {
 // local resolvers, empty if the type of measurement is not "dns" (optional).
 func (r *Result) DnsResultsets() []*dns.Resultset {
     return r.dnsResultsets
+}
+
+// Ping results, nil if the type of measurement is not "ping" (optional).
+func (r *Result) PingResults() []*ping.Result {
+    return r.pingResults
 }
 
 // Decode the Qbuf() as a DNS message, returns a *Msg from the

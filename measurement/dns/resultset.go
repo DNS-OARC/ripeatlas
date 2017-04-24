@@ -44,8 +44,7 @@ type Resultset struct {
 
 func (r *Resultset) UnmarshalJSON(b []byte) error {
     if err := json.Unmarshal(b, &r.data); err != nil {
-        fmt.Printf("%s\n", string(b))
-        return err
+        return fmt.Errorf("%s for %s", err.Error(), string(b))
     }
 
     if r.data.Error != nil {
