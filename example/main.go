@@ -88,6 +88,10 @@ func main() {
                 for _, p := range r.PingResults() {
                     log.Printf("%v", p.Rtt())
                 }
+            case "traceroute":
+                for _, p := range r.TracerouteResults() {
+                    log.Printf("%v", p.Hop())
+                }
             }
         }
     }

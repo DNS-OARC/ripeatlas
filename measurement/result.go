@@ -26,6 +26,7 @@ import (
 
     "github.com/DNS-OARC/ripeatlas/measurement/dns"
     "github.com/DNS-OARC/ripeatlas/measurement/ping"
+    "github.com/DNS-OARC/ripeatlas/measurement/traceroute"
     mdns "github.com/miekg/dns"
 )
 
@@ -96,6 +97,8 @@ type Result struct {
     dnsResultsets []*dns.Resultset
 
     pingResults []*ping.Result
+
+    tracerouteResults []*traceroute.Result
 }
 
 func (r *Result) UnmarshalJSON(b []byte) error {
@@ -126,6 +129,12 @@ func (r *Result) UnmarshalJSON(b []byte) error {
         if r.data.Result != nil {
             if err := json.Unmarshal(r.data.Result, &r.pingResults); err != nil {
                 return fmt.Errorf("Unable to process Ping result (fw %d): %s", r.data.Fw, err.Error())
+            }
+        }
+    case "traceroute":
+        if r.data.Result != nil {
+            if err := json.Unmarshal(r.data.Result, &r.tracerouteResults); err != nil {
+                return fmt.Errorf("Unable to process Traceroute result (fw %d): %s", r.data.Fw, err.Error())
             }
         }
     }
@@ -364,11 +373,6 @@ func (r *Result) DnsResultsets() []*dns.Resultset {
     return r.dnsResultsets
 }
 
-// Ping results, nil if the type of measurement is not "ping" (optional).
-func (r *Result) PingResults() []*ping.Result {
-    return r.pingResults
-}
-
 // Decode the Qbuf() as a DNS message, returns a *Msg from the
 // github.com/miekg/dns package.
 func (r *Result) DnsUnpackQbuf() (*mdns.Msg, error) {
@@ -387,4 +391,15 @@ func (r *Result) DnsUnpackQbuf() (*mdns.Msg, error) {
         }
     }
     return m, nil
+}
+
+// Ping results, nil if the type of measurement is not "ping" (optional).
+func (r *Result) PingResults() []*ping.Result {
+    return r.pingResults
+}
+
+// Traceroute results, nil if the type of measurement is not
+// "traceroute" (optional).
+func (r *Result) TracerouteResults() []*traceroute.Result {
+    return r.tracerouteResults
 }
