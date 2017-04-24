@@ -24,6 +24,7 @@ Implementation status of API calls described by https://atlas.ripe.net/docs/api/
 
 Call | Status | Func
 ---- | ------ | -----
+/api/v2/measurements/{pk}/latest/ | Done | Reader.MeasurementLatest()
 /api/v2/measurements/{pk}/results/ | Done | Reader.MeasurementResults()
 
 ### participation-requests

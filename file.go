@@ -50,6 +50,10 @@ func (f *File) read(file string) ([]byte, error) {
     return c, nil
 }
 
+func (f *File) MeasurementLatest(p Params) ([]*measurement.Result, error) {
+    return f.MeasurementResults(p)
+}
+
 func (f *File) MeasurementResults(p Params) ([]*measurement.Result, error) {
     var file string
 
