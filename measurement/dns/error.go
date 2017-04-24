@@ -26,14 +26,14 @@ import (
 
 // Error message.
 type Error struct {
-    Data struct {
+    data struct {
         Timeout     int    `json:"timeout"`
         Getaddrinfo string `json:"getaddrinfo"`
     }
 }
 
 func (e *Error) UnmarshalJSON(b []byte) error {
-    if err := json.Unmarshal(b, &e.Data); err != nil {
+    if err := json.Unmarshal(b, &e.data); err != nil {
         fmt.Printf("%s\n", string(b))
         return err
     }
@@ -42,10 +42,10 @@ func (e *Error) UnmarshalJSON(b []byte) error {
 
 // Query timeout.
 func (e *Error) Timeout() int {
-    return e.Data.Timeout
+    return e.data.Timeout
 }
 
 // Error message.
 func (e *Error) Getaddrinfo() string {
-    return e.Data.Getaddrinfo
+    return e.data.Getaddrinfo
 }
