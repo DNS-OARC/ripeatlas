@@ -234,10 +234,6 @@ func (r *Result) Qbuf() string {
 // Decode the Qbuf(), returns a *Msg from the github.com/miekg/dns package
 // or nil on error or if Qbuf() is empty.
 func (r *Result) UnpackQbuf() (*mdns.Msg, error) {
-    if r.data.Type != "dns" {
-        return nil, fmt.Errorf("Result type is not DNS")
-    }
-
     if r.data.Qbuf == "" {
         return nil, nil
     }
