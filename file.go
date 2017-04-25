@@ -28,17 +28,29 @@ import (
     "github.com/DNS-OARC/ripeatlas/measurement"
 )
 
+// A File reads RIPE Atlas data from JSON files.
 type File struct {
 }
 
+// NewFile returns a new Atlaser for reading from a JSON file.
 func NewFile() *File {
     return &File{}
 }
 
+// Since File can not distinguish what is the latest results,
+// MeasurementLatest will just call MeasurementResults.
 func (f *File) MeasurementLatest(p Params) (<-chan *measurement.Result, error) {
     return f.MeasurementResults(p)
 }
 
+// MeasurementResults reads the measurement results, as described by the
+// Params, and sends them to the returned channel.
+//
+// Params available are:
+//
+// "file": string - The JSON file to read from (required).
+//
+// "fragmented": bool - If true, JSON is in a fragmented/stream format.
 func (f *File) MeasurementResults(p Params) (<-chan *measurement.Result, error) {
     var file string
     var fragmented bool

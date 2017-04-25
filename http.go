@@ -30,6 +30,7 @@ import (
     "github.com/DNS-OARC/ripeatlas/measurement"
 )
 
+// A Http reads RIPE Atlas data from the RIPE Atlas REST API.
 type Http struct {
 }
 
@@ -37,6 +38,7 @@ const (
     MeasurementsUrl = "https://atlas.ripe.net/api/v2/measurements"
 )
 
+// NewHttp returns a new Atlaser for reading from the RIPE Atlas REST API.
 func NewHttp() *Http {
     return &Http{}
 }
@@ -83,6 +85,14 @@ func (h *Http) get(url string, fragmented bool) (<-chan *measurement.Result, err
     return ch, nil
 }
 
+// MeasurementLatest gets the latest measurement results, as described
+// by the Params, and sends them to the returned channel.
+//
+// Params available are:
+//
+// "pk": string - The measurement id to read results from (required).
+//
+// "fragmented": bool - If true, use the fragmented/stream format when reading.
 func (h *Http) MeasurementLatest(p Params) (<-chan *measurement.Result, error) {
     var pk string
     var fragmented bool
@@ -120,6 +130,24 @@ func (h *Http) MeasurementLatest(p Params) (<-chan *measurement.Result, error) {
     return h.get(url, fragmented)
 }
 
+// MeasurementResults gets the measurement results, as described by the Params,
+// and sends them to the returned channel.
+//
+// Params available are:
+//
+// "pk": string - The measurement id to read results from (required).
+//
+// "start": int64 - Get the results starting at the given UNIX timestamp.
+//
+// "stop": int64 - Get the results up to the given UNIX timestamp.
+//
+// "probe_ids": none - Unimplemented
+//
+// "anchors-only": none - Unimplemented
+//
+// "public-only": none - Unimplemented
+//
+// "fragmented": bool - If true, use the fragmented/stream format when reading.
 func (h *Http) MeasurementResults(p Params) (<-chan *measurement.Result, error) {
     var qstr []string
     var pk string
