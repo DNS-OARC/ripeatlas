@@ -231,6 +231,30 @@ func (r *Result) Qbuf() string {
     return r.data.Qbuf
 }
 
+// Decode the Qbuf(), returns a *Msg from the github.com/miekg/dns package
+// or nil on error or if Qbuf() is empty.
+func (r *Result) UnpackQbuf() (*mdns.Msg, error) {
+    if r.data.Type != "dns" {
+        return nil, fmt.Errorf("Result type is not DNS")
+    }
+
+    if r.data.Qbuf == "" {
+        return nil, nil
+    }
+
+    b, err := base64.StdEncoding.DecodeString(r.data.Qbuf)
+    if err != nil {
+        return nil, err
+    }
+
+    m := &mdns.Msg{}
+    if err := m.Unpack(b); err != nil {
+        return nil, err
+    }
+
+    return m, nil
+}
+
 // Retry count (optional).
 func (r *Result) Retry() int {
     return r.data.Retry
@@ -428,26 +452,6 @@ func (r *Result) DnsResult() *dns.Result {
 // local resolvers, empty if the type of measurement is not "dns" (optional).
 func (r *Result) DnsResultsets() []*dns.Resultset {
     return r.dnsResultsets
-}
-
-// Decode the Qbuf() as a DNS message, returns a *Msg from the
-// github.com/miekg/dns package.
-func (r *Result) DnsUnpackQbuf() (*mdns.Msg, error) {
-    if r.data.Type != "dns" {
-        return nil, fmt.Errorf("Result type is not DNS")
-    }
-
-    m := &mdns.Msg{}
-    if r.data.Qbuf != "" {
-        b, err := base64.StdEncoding.DecodeString(r.data.Qbuf)
-        if err != nil {
-            return nil, err
-        }
-        if err := m.Unpack(b); err != nil {
-            return nil, err
-        }
-    }
-    return m, nil
 }
 
 // Ping results, nil if the type of measurement is not "ping" (optional).

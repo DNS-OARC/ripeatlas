@@ -89,12 +89,16 @@ func main() {
             case "dns":
                 if r.DnsResult() != nil {
                     m, _ := r.DnsResult().UnpackAbuf()
-                    log.Printf("%v", m)
+                    if m != nil {
+                        log.Printf("%v", m)
+                    }
                 }
                 for _, s := range r.DnsResultsets() {
                     if s.Result() != nil {
                         m, _ := s.Result().UnpackAbuf()
-                        log.Printf("%v", m)
+                        if m != nil {
+                            log.Printf("%v", m)
+                        }
                     }
                 }
             case "ping":
