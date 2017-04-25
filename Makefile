@@ -7,7 +7,7 @@ SOURCES := $(wildcard *.go) \
     $(wildcard measurement/ntp/*.go) \
     $(wildcard measurement/sslcert/*.go)
 
-EXAMPLE_SOURCES = $(wildcard example/*.go)
+EXAMPLE_SOURCES = $(wildcard example/*/*.go)
 
 all: .built
 
