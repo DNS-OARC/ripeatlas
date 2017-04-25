@@ -8,7 +8,15 @@ Go bindings for the RIPE Atlas API to retrieve measurements and other data,
 can read from JSON files or use the REST API. Will decode the data into Go
 objects and have helper functions to easily access the data within.
 
-## REST API implementation status
+## Atlaser
+
+`Atlaser` is the interface to access RIPE Atlas and there are a few
+different ways to do so:
+- To read JSON files see [File](https://godoc.org/github.com/DNS-OARC/ripeatlas#File) and `examples/reader/main.go`.
+- To use REST API see [Http](https://godoc.org/github.com/DNS-OARC/ripeatlas#Http) and `examples/reader/main.go`.
+- To use Streaming API see [Stream](https://godoc.org/github.com/DNS-OARC/ripeatlas#Stream) and `examples/streamer/main.go`.
+
+## REST API
 
 Implementation status of API calls described by https://atlas.ripe.net/docs/api/v2/reference/ .
 
@@ -31,7 +39,7 @@ Call | Status | Func
 
 ### probes
 
-## Objects implementation status
+## Objects
 
 Implementation status of objects (by type) decribed by https://atlas.ripe.net/docs/data_struct/ .
 
@@ -69,6 +77,19 @@ for r := range c {
 // Read Atlas results using REST API
 a := ripeatlas.Atlaser(ripeatlas.NewHttp())
 c, err := a.MeasurementResults(ripeatlas.Params{"pk": id})
+if err != nil {
+    ...
+}
+for r := range c {
+    if r.ParseError != nil {
+        ...
+    }
+    fmt.Printf("%d %s\n", r.MsmId(), r.Type())
+}
+
+// Read DNS measurements using Streaming API
+a := ripeatlas.Atlaser(ripeatlas.NewStream())
+c, err := a.MeasurementResults(ripeatlas.Params{"type": "dns"})
 if err != nil {
     ...
 }
