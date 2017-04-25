@@ -123,17 +123,22 @@ func (r *Result) Submax() int {
     return r.data.Submax
 }
 
-// Decode the Abuf(), returns a *Msg from the github.com/miekg/dns package.
+// Decode the Abuf(), returns a *Msg from the github.com/miekg/dns package
+// or nil on error or if Abuf() is empty.
 func (r *Result) UnpackAbuf() (*mdns.Msg, error) {
-    m := &mdns.Msg{}
-    if r.data.Abuf != "" {
-        b, err := base64.StdEncoding.DecodeString(r.data.Abuf)
-        if err != nil {
-            return nil, err
-        }
-        if err := m.Unpack(b); err != nil {
-            return nil, err
-        }
+    if r.data.Abuf == "" {
+        return nil, nil
     }
+
+    b, err := base64.StdEncoding.DecodeString(r.data.Abuf)
+    if err != nil {
+        return nil, err
+    }
+
+    m := &mdns.Msg{}
+    if err := m.Unpack(b); err != nil {
+        return nil, err
+    }
+
     return m, nil
 }

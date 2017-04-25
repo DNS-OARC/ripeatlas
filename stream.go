@@ -25,7 +25,7 @@ import (
     "github.com/DNS-OARC/ripeatlas/measurement"
 
     "github.com/graarh/golang-socketio"
-	"github.com/graarh/golang-socketio/transport"
+    "github.com/graarh/golang-socketio/transport"
 )
 
 type Stream struct {
@@ -70,47 +70,47 @@ func (h *Stream) MeasurementResults(p Params) (<-chan *measurement.Result, error
     ch := make(chan *measurement.Result)
 
     c, err := gosocketio.Dial(StreamUrl, transport.GetDefaultWebsocketTransport())
-	if err != nil {
-		return nil, fmt.Errorf("gosocketio.Dial(%s): %s", StreamUrl, err.Error())
-	}
+    if err != nil {
+        return nil, fmt.Errorf("gosocketio.Dial(%s): %s", StreamUrl, err.Error())
+    }
 
     err = c.On("atlas_error", func(h *gosocketio.Channel, args interface{}) {
         r := &measurement.Result{ParseError: fmt.Errorf("atlas_error: %v", args)}
         ch <- r
         c.Close()
         close(ch)
-	})
-	if err != nil {
+    })
+    if err != nil {
         return nil, fmt.Errorf("c.On(atlas_error): %s", err.Error())
-	}
+    }
 
-	err = c.On("atlas_result", func(h *gosocketio.Channel, r measurement.Result) {
+    err = c.On("atlas_result", func(h *gosocketio.Channel, r measurement.Result) {
         ch <- &r
-	})
-	if err != nil {
+    })
+    if err != nil {
         return nil, fmt.Errorf("c.On(atlas_result): %s", err.Error())
-	}
+    }
 
-	err = c.On(gosocketio.OnDisconnection, func(h *gosocketio.Channel) {
+    err = c.On(gosocketio.OnDisconnection, func(h *gosocketio.Channel) {
         c.Close()
         close(ch)
-	})
-	if err != nil {
+    })
+    if err != nil {
         return nil, fmt.Errorf("c.On(disconnect): %s", err.Error())
-	}
+    }
 
-	err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
-		err := h.Emit("atlas_subscribe", subscribe)
-		if err != nil {
+    err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
+        err := h.Emit("atlas_subscribe", subscribe)
+        if err != nil {
             r := &measurement.Result{ParseError: fmt.Errorf("h.Emit(atlas_subscribe): %s", err.Error())}
             ch <- r
             c.Close()
             close(ch)
-		}
-	})
-	if err != nil {
+        }
+    })
+    if err != nil {
         return nil, fmt.Errorf("c.On(connect): %s", err.Error())
-	}
+    }
 
     return ch, nil
 }
