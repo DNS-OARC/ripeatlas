@@ -28,6 +28,8 @@ import (
     "github.com/graarh/golang-socketio/transport"
 )
 
+// A Stream reads RIPE Atlas data from the streaming API
+// (https://atlas.ripe.net/docs/result-streaming/).
 type Stream struct {
 }
 
@@ -35,15 +37,36 @@ const (
     StreamUrl = "wss://atlas-stream.ripe.net:443/stream/socket.io/?EIO=3&transport=websocket"
 )
 
+// NewHttp returns a new Atlaser for reading from the RIPE Atlas streaming API.
 func NewStream() *Stream {
     return &Stream{}
 }
 
+// MeasurementLatest streams the latest measurement results, as described
+// by the Params, and sends them to the returned channel.
+//
+// Params available are:
+//
+// "msm": int - The measurement id to get results from.
+//
+// "type": string - The measurement result type to stream.
+//
+// "sourceAddress": none - Unimplemented
+//
+// "sourcePrefix": none - Unimplemented
+//
+// "destinationAddress": none - Unimplemented
+//
+// "destinationPrefix": none - Unimplemented
+//
+// "passThroughHost": none - Unimplemented
+//
+// "passThroughPrefix": none - Unimplemented
+//
+// "sendBacklog": none - Unimplemented
+//
+// "buffering": none - Unimplemented
 func (h *Stream) MeasurementLatest(p Params) (<-chan *measurement.Result, error) {
-    return h.MeasurementResults(p)
-}
-
-func (h *Stream) MeasurementResults(p Params) (<-chan *measurement.Result, error) {
     subscribe := make(map[string]interface{})
 
     subscribe["stream_type"] = "result"
@@ -62,6 +85,22 @@ func (h *Stream) MeasurementResults(p Params) (<-chan *measurement.Result, error
                 return nil, fmt.Errorf("Invalid %s parameter, must be string", k)
             }
             subscribe["type"] = v
+        case "sourceAddress":
+            fallthrough
+        case "sourcePrefix":
+            fallthrough
+        case "destinationAddress":
+            fallthrough
+        case "destinationPrefix":
+            fallthrough
+        case "passThroughHost":
+            fallthrough
+        case "passThroughPrefix":
+            fallthrough
+        case "sendBacklog":
+            fallthrough
+        case "buffering":
+            return nil, fmt.Errorf("Unimplemented parameter %s", k)
         default:
             return nil, fmt.Errorf("Invalid parameter %s", k)
         }
@@ -113,4 +152,10 @@ func (h *Stream) MeasurementResults(p Params) (<-chan *measurement.Result, error
     }
 
     return ch, nil
+}
+
+// Since Stream streams the latest results (more or less, backlog sending
+// is available), MeasurementResults will just call MeasurementLatest.
+func (h *Stream) MeasurementResults(p Params) (<-chan *measurement.Result, error) {
+    return h.MeasurementResults(p)
 }
