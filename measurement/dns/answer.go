@@ -57,6 +57,8 @@ func (a *Answer) UnmarshalJSON(b []byte) error {
                 return fmt.Errorf("Element within RDATA field unsupported type %T", i)
             }
         }
+    case nil:
+        return nil
     default:
         return fmt.Errorf("RDATA field unsupported type %T", a.data.Rdata)
     }
