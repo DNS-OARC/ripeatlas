@@ -31,7 +31,7 @@ type Reply struct {
         Err        string          `json:"err"`
         From       string          `json:"from"`
         Ittl       int             `json:"ittl"`
-        Edst       int             `json:"edst"`
+        Edst       string          `json:"edst"`
         Late       int             `json:"late"`
         Mtu        int             `json:"mtu"`
         Rtt        float64         `json:"rtt"`
@@ -86,7 +86,7 @@ func (r *Reply) Ittl() int {
 
 // Destination address in the packet that triggered the error ICMP
 // if different from the target of the measurement (optional).
-func (r *Reply) Edst() int {
+func (r *Reply) Edst() string {
     return r.data.Edst
 }
 
