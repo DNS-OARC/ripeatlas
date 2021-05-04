@@ -136,7 +136,6 @@ func (s *Stream) MeasurementLatest(p Params) (<-chan *measurement.Result, error)
     }
 
     err = c.On(gosocketio.OnDisconnection, func(h *gosocketio.Channel) {
-        c.Close()
         close(ch)
     })
     if err != nil {
