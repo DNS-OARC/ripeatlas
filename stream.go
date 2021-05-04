@@ -120,7 +120,7 @@ func (s *Stream) MeasurementLatest(p Params) (<-chan *measurement.Result, error)
 
     err = c.On("atlas_error", func(h *gosocketio.Channel, args interface{}) {
         r := &measurement.Result{ParseError: fmt.Errorf("atlas_error: %v", args)}
-        ch <- r
+        trySend(ch, r)
         c.Close()
     })
     if err != nil {
@@ -128,7 +128,7 @@ func (s *Stream) MeasurementLatest(p Params) (<-chan *measurement.Result, error)
     }
 
     err = c.On("atlas_result", func(h *gosocketio.Channel, r measurement.Result) {
-        ch <- &r
+    	trySend(ch, &r)
     })
     if err != nil {
         return nil, fmt.Errorf("c.On(atlas_result): %s", err.Error())
@@ -145,7 +145,7 @@ func (s *Stream) MeasurementLatest(p Params) (<-chan *measurement.Result, error)
         err := h.Emit("atlas_subscribe", subscribe)
         if err != nil {
             r := &measurement.Result{ParseError: fmt.Errorf("h.Emit(atlas_subscribe): %s", err.Error())}
-            ch <- r
+            trySend(ch, r)
             c.Close()
             close(ch)
         }
@@ -155,6 +155,15 @@ func (s *Stream) MeasurementLatest(p Params) (<-chan *measurement.Result, error)
     }
 
     return ch, nil
+}
+
+func trySend(ch chan *measurement.Result, r *measurement.Result) {
+    defer func() {
+    	recover()
+    }()
+    func() {
+        ch <- r
+    }()
 }
 
 // Since Stream streams the latest results (more or less, backlog sending
