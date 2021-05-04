@@ -122,7 +122,6 @@ func (s *Stream) MeasurementLatest(p Params) (<-chan *measurement.Result, error)
         r := &measurement.Result{ParseError: fmt.Errorf("atlas_error: %v", args)}
         ch <- r
         c.Close()
-        close(ch)
     })
     if err != nil {
         return nil, fmt.Errorf("c.On(atlas_error): %s", err.Error())
