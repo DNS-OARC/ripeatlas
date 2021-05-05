@@ -134,6 +134,8 @@ func (s *Stream) MeasurementLatest(p Params) (<-chan *measurement.Result, error)
         return nil, fmt.Errorf("c.On(atlas_result): %s", err.Error())
     }
 
+    // This handler is called by the c.Close() method on the gosocketio.Client
+    // This is the only place where the channel should be closed
     err = c.On(gosocketio.OnDisconnection, func(h *gosocketio.Channel) {
         close(ch)
     })
@@ -147,7 +149,6 @@ func (s *Stream) MeasurementLatest(p Params) (<-chan *measurement.Result, error)
             r := &measurement.Result{ParseError: fmt.Errorf("h.Emit(atlas_subscribe): %s", err.Error())}
             trySend(ch, r)
             c.Close()
-            close(ch)
         }
     })
     if err != nil {
