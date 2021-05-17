@@ -21,6 +21,7 @@ package ripeatlas
 
 import (
     "fmt"
+    "sync"
 
     "github.com/DNS-OARC/ripeatlas/measurement"
     "github.com/DNS-OARC/ripeatlas/request"
@@ -112,6 +113,8 @@ func (s *Stream) MeasurementLatest(p Params) (<-chan *measurement.Result, error)
     }
 
     ch := make(chan *measurement.Result)
+    var m sync.Mutex
+    closed := false
 
     c, err := gosocketio.Dial(StreamUrl, transport.GetDefaultWebsocketTransport())
     if err != nil {
@@ -119,16 +122,29 @@ func (s *Stream) MeasurementLatest(p Params) (<-chan *measurement.Result, error)
     }
 
     err = c.On("atlas_error", func(h *gosocketio.Channel, args interface{}) {
+        m.Lock()
+        if closed {
+            m.Unlock()
+            return
+        }
+
         r := &measurement.Result{ParseError: fmt.Errorf("atlas_error: %v", args)}
         ch <- r
+        m.Unlock()
+
         c.Close()
-        close(ch)
     })
     if err != nil {
         return nil, fmt.Errorf("c.On(atlas_error): %s", err.Error())
     }
 
     err = c.On("atlas_result", func(h *gosocketio.Channel, r measurement.Result) {
+        m.Lock()
+        defer m.Unlock()
+        if closed {
+            return
+        }
+
         ch <- &r
     })
     if err != nil {
@@ -136,8 +152,14 @@ func (s *Stream) MeasurementLatest(p Params) (<-chan *measurement.Result, error)
     }
 
     err = c.On(gosocketio.OnDisconnection, func(h *gosocketio.Channel) {
-        c.Close()
+        m.Lock()
+        defer m.Unlock()
+        if closed {
+            return
+        }
+
         close(ch)
+        closed = true
     })
     if err != nil {
         return nil, fmt.Errorf("c.On(disconnect): %s", err.Error())
@@ -146,10 +168,16 @@ func (s *Stream) MeasurementLatest(p Params) (<-chan *measurement.Result, error)
     err = c.On(gosocketio.OnConnection, func(h *gosocketio.Channel) {
         err := h.Emit("atlas_subscribe", subscribe)
         if err != nil {
+            m.Lock()
+            if closed {
+                m.Unlock()
+                return
+            }
+
             r := &measurement.Result{ParseError: fmt.Errorf("h.Emit(atlas_subscribe): %s", err.Error())}
             ch <- r
+            m.Unlock()
             c.Close()
-            close(ch)
         }
     })
     if err != nil {
