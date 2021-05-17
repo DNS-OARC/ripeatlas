@@ -13,7 +13,7 @@ var Type = flag.String("type", "", "stream specific measurement type")
 func main() {
     flag.Parse()
 
-    if Type == nil {
+    if Type == nil || *Type == "" {
         log.Fatalf("Need -type")
     }
 
