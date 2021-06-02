@@ -1,6 +1,6 @@
 # Go bindings for RIPE Atlas API
 
-[![Build Status](https://travis-ci.org/DNS-OARC/ripeatlas.svg?branch=master)](https://travis-ci.org/DNS-OARC/ripeatlas) [![GoDoc](https://godoc.org/github.com/DNS-OARC/ripeatlas?status.svg)](https://godoc.org/github.com/DNS-OARC/ripeatlas)
+[![GoDoc](https://godoc.org/github.com/DNS-OARC/ripeatlas?status.svg)](https://godoc.org/github.com/DNS-OARC/ripeatlas)
 
 ## About
 
