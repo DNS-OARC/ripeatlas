@@ -28,7 +28,7 @@ import (
 type Reply struct {
     data struct {
         X          string          `json:"x"`
-        Err        string          `json:"err"`
+        Err        interface{}     `json:"err"`
         From       string          `json:"from"`
         Ittl       int             `json:"ittl"`
         Edst       string          `json:"edst"`
@@ -50,6 +50,17 @@ func (r *Reply) UnmarshalJSON(b []byte) error {
     if err := json.Unmarshal(b, &r.data); err != nil {
         return fmt.Errorf("%s for %s", err.Error(), string(b))
     }
+    switch v := r.data.Err.(type) {
+    case string:
+        r.data.Err = v
+    case int:
+        r.data.Err = fmt.Sprintf("%v", v)
+    case float64:
+        r.data.Err = fmt.Sprintf("%d", v)
+    case nil:
+    default:
+        return fmt.Errorf("err type %T unexpected for %s", r.data.Err, string(b))
+    }
 
     if r.data.Icmpext != nil {
         r.icmpext = &Icmpext{}
@@ -70,7 +81,7 @@ func (r *Reply) X() string {
 // "A" (administratively prohibited), "P" (protocol unreachable),
 // "p" (port unreachable) "h" (beyond scope, from fw 4650) (optional).
 func (r *Reply) Err() string {
-    return r.data.Err
+    return r.data.Err.(string)
 }
 
 // IPv4 or IPv6 source address in reply.

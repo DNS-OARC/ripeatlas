@@ -23,6 +23,7 @@ Package ripeatlas implements bindings for RIPE Atlas.
 The Atlaser is the interface to access RIPE Atlas and there are a few
 different ways to do so, for example read measurement results from a
 JSON file:
+
     a := ripeatlas.Atlaser(ripeatlas.NewFile())
     c, err := a.MeasurementResults(ripeatlas.Params{"file": name})
     if err != nil {
