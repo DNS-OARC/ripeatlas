@@ -27,8 +27,9 @@ import (
 // Traceroute reply.
 type Reply struct {
     data struct {
-        X          string          `json:"x"`
-        Err        string          `json:"err"`
+        X          string `json:"x"`
+        Err        string
+        _err       interface{}     `json:"err"`
         From       string          `json:"from"`
         Ittl       int             `json:"ittl"`
         Edst       string          `json:"edst"`
@@ -49,6 +50,14 @@ type Reply struct {
 func (r *Reply) UnmarshalJSON(b []byte) error {
     if err := json.Unmarshal(b, &r.data); err != nil {
         return fmt.Errorf("%s for %s", err.Error(), string(b))
+    }
+    switch _err := r.data._err.(type) {
+    case string:
+        r.data.Err = _err
+    case int:
+        r.data.Err = fmt.Sprintf("%v", _err)
+    default:
+        return fmt.Errorf("err type %T unexpected for %s", r.data._err, string(b))
     }
 
     if r.data.Icmpext != nil {
