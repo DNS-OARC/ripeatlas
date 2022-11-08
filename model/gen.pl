@@ -1,23 +1,4 @@
 #!/usr/bin/env perl
-#
-# Author Jerry Lundström <jerry@dns-oarc.net>
-# Copyright (c) 2017, OARC, Inc.
-# All rights reserved.
-#
-# This file is part of ripeatlas.
-#
-# ripeatlas is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# ripeatlas is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public License
-# along with ripeatlas.  If not, see <http://www.gnu.org/licenses/>.
 
 use utf8;
 use common::sense;
@@ -125,25 +106,6 @@ while (<FILE>) {
     }
 }
 
-say "// Author Jerry Lundström <jerry\@dns-oarc.net>";
-say "// Copyright (c) 2017, OARC, Inc.";
-say "// All rights reserved.";
-say "//";
-say "// This file is part of ripeatlas.";
-say "//";
-say "// ripeatlas is free software: you can redistribute it and/or modify";
-say "// it under the terms of the GNU Lesser General Public License as published by";
-say "// the Free Software Foundation, either version 3 of the License, or";
-say "// (at your option) any later version.";
-say "//";
-say "// ripeatlas is distributed in the hope that it will be useful,";
-say "// but WITHOUT ANY WARRANTY; without even the implied warranty of";
-say "// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the";
-say "// GNU Lesser General Public License for more details.";
-say "//";
-say "// You should have received a copy of the GNU Lesser General Public License";
-say "// along with ripeatlas.  If not, see <http://www.gnu.org/licenses/>.";
-say "";
 say "package $package";
 say "";
 say "import (";
