@@ -1,18 +1,9 @@
 # Examples using ripeatlas Go bindings
 
-To use any of these examples, do the following from the top directory of
-`ripeatlas`.
+To use any of these examples run `make` in this directory or `go build`
+in the example you want to use.
 
-```shell
-mkdir -p "$GOPATH/src/github.com/DNS-OARC"
-ln -s "$PWD" "$GOPATH/src/github.com/DNS-OARC/"
-make dep
-make
-cd examples/
-make
-```
-
-After building all examples programs, each one can be run with `-help` to see
+After building examples programs, each one can be run with `-help` to see
 what options are available.
 
 ## measurements
