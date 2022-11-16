@@ -62,7 +62,10 @@ func (r *Reply) X() string {
 // "A" (administratively prohibited), "P" (protocol unreachable),
 // "p" (port unreachable) "h" (beyond scope, from fw 4650) (optional).
 func (r *Reply) Err() string {
-    return r.data.Err.(string)
+    if err, ok := r.data.Err.(string); ok {
+        return err
+    }
+    return ""
 }
 
 // IPv4 or IPv6 source address in reply.
