@@ -2,8 +2,10 @@ package dns
 
 import (
     "encoding/base64"
+    "encoding/hex"
     "encoding/json"
     "fmt"
+    "strconv"
 
     mdns "github.com/miekg/dns"
 )
@@ -26,6 +28,8 @@ type Result struct {
     }
 
     answers []*Answer
+    nsid       []byte
+    nsidParsed bool
 }
 
 func (r *Result) UnmarshalJSON(b []byte) error {
@@ -102,6 +106,47 @@ func (r *Result) Subid() int {
 // Total number of results within a group (optional).
 func (r *Result) Submax() int {
     return r.data.Submax
+}
+
+// Name Server Identifier (NSID) from EDNS0 options, if present.
+func (r *Result) Nsid() []byte {
+    if !r.nsidParsed {
+        r.parseNsid()
+    }
+    return r.nsid
+}
+
+// Human-friendly representation: ASCII if printable, else hex.
+func (r *Result) NsidString() string {
+    b := r.Nsid()
+    if len(b) == 0 {
+        return ""
+    }
+    if strconv.CanBackquote(string(b)) {
+        return string(b)
+    }
+    return hex.EncodeToString(b)
+}
+
+func (r *Result) parseNsid() {
+    r.nsidParsed = true
+
+    msg, err := r.UnpackAbuf()
+    if err != nil || msg == nil {
+        return
+    }
+
+    if opt := msg.IsEdns0(); opt != nil {
+        for _, o := range opt.Option {
+            if e, ok := o.(*mdns.EDNS0_NSID); ok {
+                // EDNS0_NSID.Nsid is always hex-encoded
+                if raw, err := hex.DecodeString(e.Nsid); err == nil {
+                    r.nsid = append([]byte(nil), raw...)
+                }
+                return
+            }
+        }
+    }
 }
 
 // Decode the Abuf(), returns a *Msg from the github.com/miekg/dns package
