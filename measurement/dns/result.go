@@ -5,7 +5,6 @@ import (
     "encoding/hex"
     "encoding/json"
     "fmt"
-    "strconv"
 
     mdns "github.com/miekg/dns"
 )
@@ -28,8 +27,7 @@ type Result struct {
     }
 
     answers []*Answer
-    nsid       []byte
-    nsidParsed bool
+    nsid    []byte
 }
 
 func (r *Result) UnmarshalJSON(b []byte) error {
@@ -42,6 +40,9 @@ func (r *Result) UnmarshalJSON(b []byte) error {
             return fmt.Errorf("Unable to process DNS answers: %s", err.Error())
         }
     }
+
+    // Parse NSID from DNS response if available
+    r.parseNsid()
 
     return nil
 }
@@ -110,27 +111,21 @@ func (r *Result) Submax() int {
 
 // Name Server Identifier (NSID) from EDNS0 options, if present.
 func (r *Result) Nsid() []byte {
-    if !r.nsidParsed {
-        r.parseNsid()
-    }
     return r.nsid
 }
 
 // Human-friendly representation: ASCII if printable, else hex.
 func (r *Result) NsidString() string {
-    b := r.Nsid()
-    if len(b) == 0 {
+    if len(r.nsid) == 0 {
         return ""
     }
-    if strconv.CanBackquote(string(b)) {
-        return string(b)
+    if isASCIIPrintable(r.nsid) {
+        return string(r.nsid)
     }
-    return hex.EncodeToString(b)
+    return hex.EncodeToString(r.nsid)
 }
 
 func (r *Result) parseNsid() {
-    r.nsidParsed = true
-
     msg, err := r.UnpackAbuf()
     if err != nil || msg == nil {
         return
@@ -147,6 +142,16 @@ func (r *Result) parseNsid() {
             }
         }
     }
+}
+
+// isASCIIPrintable checks if all bytes are ASCII printable characters (32-126).
+func isASCIIPrintable(data []byte) bool {
+    for _, b := range data {
+        if b < 32 || b > 126 {
+            return false
+        }
+    }
+    return true
 }
 
 // Decode the Abuf(), returns a *Msg from the github.com/miekg/dns package
