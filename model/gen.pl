@@ -113,7 +113,7 @@ say "    \"encoding/json\"";
 say "    \"fmt\"";
 if ($need_subpackage) {
     say "";
-    say "    \"github.com/DNS-OARC/ripeatlas/$subpackage_path$subpackage\""
+    say "    \"codeberg.org/DNS-OARC/ripeatlas/$subpackage_path$subpackage\""
 }
 say ")";
 say "";

@@ -8,8 +8,8 @@ import (
     neturl "net/url"
     "strings"
 
-    "github.com/DNS-OARC/ripeatlas/measurement"
-    "github.com/DNS-OARC/ripeatlas/request"
+    "codeberg.org/DNS-OARC/ripeatlas/measurement"
+    "codeberg.org/DNS-OARC/ripeatlas/request"
 )
 
 // A Http reads RIPE Atlas data from the RIPE Atlas REST API.

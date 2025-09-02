@@ -1,8 +1,8 @@
-module github.com/DNS-OARC/ripeatlas/examples/reader
+module codeberg.org/DNS-OARC/ripeatlas/examples/reader
 
 go 1.19
 
-require github.com/DNS-OARC/ripeatlas v0.0.0
+require codeberg.org/DNS-OARC/ripeatlas v0.0.0
 
 require (
 	github.com/gorilla/websocket v1.5.0 // indirect
@@ -15,4 +15,4 @@ require (
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 )
 
-replace github.com/DNS-OARC/ripeatlas => ../../
+replace codeberg.org/DNS-OARC/ripeatlas => ../../

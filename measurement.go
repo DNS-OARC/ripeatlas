@@ -4,7 +4,7 @@ import (
     "encoding/json"
     "fmt"
 
-    "github.com/DNS-OARC/ripeatlas/measurement"
+    "codeberg.org/DNS-OARC/ripeatlas/measurement"
 )
 
 type Measurement struct {

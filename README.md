@@ -1,6 +1,6 @@
 # Go bindings for RIPE Atlas API
 
-[![GoDoc](https://godoc.org/github.com/DNS-OARC/ripeatlas?status.svg)](https://godoc.org/github.com/DNS-OARC/ripeatlas)
+[![GoDoc](https://godoc.org/codeberg.org/DNS-OARC/ripeatlas?status.svg)](https://godoc.org/codeberg.org/DNS-OARC/ripeatlas)
 
 ## About
 
@@ -12,9 +12,9 @@ objects and have helper functions to easily access the data within.
 
 `Atlaser` is the interface to access RIPE Atlas and there are a few
 different ways to do so:
-- To read JSON files see [File](https://godoc.org/github.com/DNS-OARC/ripeatlas#File) and `examples/reader/main.go`.
-- To use REST API see [Http](https://godoc.org/github.com/DNS-OARC/ripeatlas#Http) and `examples/reader/main.go`.
-- To use Streaming API see [Stream](https://godoc.org/github.com/DNS-OARC/ripeatlas#Stream) and `examples/streamer/main.go`.
+- To read JSON files see [File](https://godoc.org/codeberg.org/DNS-OARC/ripeatlas#File) and `examples/reader/main.go`.
+- To use REST API see [Http](https://godoc.org/codeberg.org/DNS-OARC/ripeatlas#Http) and `examples/reader/main.go`.
+- To use Streaming API see [Stream](https://godoc.org/codeberg.org/DNS-OARC/ripeatlas#Stream) and `examples/streamer/main.go`.
 
 ## REST API
 
@@ -62,12 +62,12 @@ wifi | 4610 to 4760 | Done (undocumented by RIPE)
 
 ## Usage
 
-See or test more complete examples in the [examples directory](https://github.com/DNS-OARC/ripeatlas/tree/master/examples).
+See or test more complete examples in the [examples directory](https://codeberg.org/DNS-OARC/ripeatlas/tree/master/examples).
 
 ```go
 import (
     "fmt"
-    "github.com/DNS-OARC/ripeatlas"
+    "codeberg.org/DNS-OARC/ripeatlas"
 )
 
 // Read Atlas results from a file

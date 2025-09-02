@@ -23,8 +23,8 @@ API access.
 package ripeatlas
 
 import (
-    "github.com/DNS-OARC/ripeatlas/measurement"
-    "github.com/DNS-OARC/ripeatlas/request"
+    "codeberg.org/DNS-OARC/ripeatlas/measurement"
+    "codeberg.org/DNS-OARC/ripeatlas/request"
 )
 
 // Params is used to give parameters to the different access methods.

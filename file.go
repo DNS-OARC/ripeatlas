@@ -6,8 +6,8 @@ import (
     "io"
     "os"
 
-    "github.com/DNS-OARC/ripeatlas/measurement"
-    "github.com/DNS-OARC/ripeatlas/request"
+    "codeberg.org/DNS-OARC/ripeatlas/measurement"
+    "codeberg.org/DNS-OARC/ripeatlas/request"
 )
 
 // A File reads RIPE Atlas data from JSON files.

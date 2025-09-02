@@ -5,7 +5,7 @@ import (
     "log"
     "fmt"
 
-    "github.com/DNS-OARC/ripeatlas"
+    "codeberg.org/DNS-OARC/ripeatlas"
 )
 
 var all bool

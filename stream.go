@@ -4,8 +4,8 @@ import (
     "fmt"
     "sync"
 
-    "github.com/DNS-OARC/ripeatlas/measurement"
-    "github.com/DNS-OARC/ripeatlas/request"
+    "codeberg.org/DNS-OARC/ripeatlas/measurement"
+    "codeberg.org/DNS-OARC/ripeatlas/request"
 
     "github.com/graarh/golang-socketio"
     "github.com/graarh/golang-socketio/transport"
