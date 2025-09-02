@@ -5,12 +5,12 @@ import (
     "encoding/json"
     "fmt"
 
-    "github.com/DNS-OARC/ripeatlas/measurement/dns"
-    "github.com/DNS-OARC/ripeatlas/measurement/http"
-    "github.com/DNS-OARC/ripeatlas/measurement/ntp"
-    "github.com/DNS-OARC/ripeatlas/measurement/ping"
-    "github.com/DNS-OARC/ripeatlas/measurement/sslcert"
-    "github.com/DNS-OARC/ripeatlas/measurement/traceroute"
+    "codeberg.org/DNS-OARC/ripeatlas/measurement/dns"
+    "codeberg.org/DNS-OARC/ripeatlas/measurement/http"
+    "codeberg.org/DNS-OARC/ripeatlas/measurement/ntp"
+    "codeberg.org/DNS-OARC/ripeatlas/measurement/ping"
+    "codeberg.org/DNS-OARC/ripeatlas/measurement/sslcert"
+    "codeberg.org/DNS-OARC/ripeatlas/measurement/traceroute"
     mdns "github.com/miekg/dns"
 )
 

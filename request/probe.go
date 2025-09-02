@@ -4,7 +4,7 @@ import (
     "encoding/json"
     "fmt"
 
-    "github.com/DNS-OARC/ripeatlas/request/probe"
+    "codeberg.org/DNS-OARC/ripeatlas/request/probe"
 )
 
 type Probe struct {

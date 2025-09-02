@@ -4,8 +4,8 @@ import (
     "flag"
     "log"
 
-    "github.com/DNS-OARC/ripeatlas"
-    "github.com/DNS-OARC/ripeatlas/request"
+    "codeberg.org/DNS-OARC/ripeatlas"
+    "codeberg.org/DNS-OARC/ripeatlas/request"
 )
 
 var all bool

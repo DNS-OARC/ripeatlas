@@ -5,8 +5,8 @@ import (
     "log"
     "time"
 
-    "github.com/DNS-OARC/ripeatlas"
-    "github.com/DNS-OARC/ripeatlas/measurement"
+    "codeberg.org/DNS-OARC/ripeatlas"
+    "codeberg.org/DNS-OARC/ripeatlas/measurement"
 )
 
 var start int

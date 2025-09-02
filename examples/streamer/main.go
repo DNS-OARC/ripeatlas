@@ -4,7 +4,7 @@ import (
     "flag"
     "log"
 
-    "github.com/DNS-OARC/ripeatlas"
+    "codeberg.org/DNS-OARC/ripeatlas"
 )
 
 var Msm = flag.Int("msm", 0, "stream specific measurement id (optional)")

@@ -1,4 +1,4 @@
-module github.com/DNS-OARC/ripeatlas
+module codeberg.org/DNS-OARC/ripeatlas
 
 go 1.19
 
