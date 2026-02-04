@@ -1,3 +1,5 @@
+# NOTE: Moved to https://codeberg.org/DNS-OARC/ripeatlas
+
 # Go bindings for RIPE Atlas API
 
 [![GoDoc](https://godoc.org/codeberg.org/DNS-OARC/ripeatlas?status.svg)](https://godoc.org/codeberg.org/DNS-OARC/ripeatlas)
